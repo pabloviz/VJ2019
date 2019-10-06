@@ -12,13 +12,14 @@ class Bullet
 {
 
 public:
-	void init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, glm::ivec2 &direction, glm::ivec2 &posPlayer);
+	void init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, glm::ivec2 &direction, glm::ivec2 &posPlayer, bool friendly);
 	void update(int deltaTime);
 	void render();
 	void setTileMap(TileMap *tilemap);
 	void setPosition(const glm::vec2 &pos);
 
 	bool farFromPlayer(const glm::vec2 &posPlayer);
+	bool getFriendly();
 
 
 	glm::ivec2 getBulletPos();
@@ -28,6 +29,7 @@ private:
 	Sprite *sprite;
 	TileMap *map;
 	glm::ivec2 tileMapDispl, posBullet, bulletDirection;
+	bool friendly;
 
 
 };

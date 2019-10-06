@@ -16,29 +16,16 @@ enum BulletAnims
 	FIRE
 };
 
-void Bullet::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, glm::ivec2 &direction, glm::ivec2 &posPlayer)
+void Bullet::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, glm::ivec2 &direction, 
+				  glm::ivec2 &posPlayer, bool friendly)
 {
-
+	this->friendly = friendly;
 	spritesheet.loadFromFile("images/bullet.png", TEXTURE_PIXEL_FORMAT_RGBA);
 	sprite = Sprite::createSprite(glm::ivec2(8, 8), glm::vec2(1, 1), &spritesheet, &shaderProgram);
 	sprite->setNumberAnimations(1);
 
 	sprite->setAnimationSpeed(FIRE, 8);
 	sprite->addKeyframe(FIRE, glm::vec2(0.f, 0.f));
-	/*
-	sprite->setAnimationSpeed(STAND_RIGHT, 8);
-	sprite->addKeyframe(STAND_RIGHT, glm::vec2(0.25f, 0.f));
-
-	sprite->setAnimationSpeed(MOVE_LEFT, 8);
-	sprite->addKeyframe(MOVE_LEFT, glm::vec2(0.f, 0.f));
-	sprite->addKeyframe(MOVE_LEFT, glm::vec2(0.f, 0.25f));
-	sprite->addKeyframe(MOVE_LEFT, glm::vec2(0.f, 0.5f));
-
-	sprite->setAnimationSpeed(MOVE_RIGHT, 8);
-	sprite->addKeyframe(MOVE_RIGHT, glm::vec2(0.25, 0.f));
-	sprite->addKeyframe(MOVE_RIGHT, glm::vec2(0.25, 0.25f));
-	sprite->addKeyframe(MOVE_RIGHT, glm::vec2(0.25, 0.5f));
-	*/
 	sprite->changeAnimation(FIRE);
 	tileMapDispl = tileMapPos;
 	bulletDirection = direction;
@@ -86,4 +73,8 @@ bool Bullet::farFromPlayer(const glm::vec2 &posPlayer) {
 
 glm::ivec2 Bullet::getBulletPos() {
 	return posBullet;
+}
+
+bool Bullet::getFriendly() {
+	return friendly;
 }

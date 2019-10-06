@@ -12,23 +12,26 @@
 #define FALL_STEP 4
 #define MAX_BULLETS 4
 
+#define TILESHEET_H 0.125
+#define TILESHEET_V 0.1875
+
 
 enum PlayerAnims
 {
-	STAND_LEFT, STAND_RIGHT, MOVE_LEFT, MOVE_RIGHT
+	STAND_LEFT, STAND_RIGHT, MOVE_LEFT, MOVE_RIGHT, MOVE_LEFT_UP, MOVE_RIGHT_UP,
+	MOVE_LEFT_DOWN, MOVE_RIGHT_DOWN
 };
 
 
-void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
+void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Scene *scene)
 {
 	bJumping = false;
 	x_pressed = false;
+	this->scene = scene;
 
-	for (int i = 0; i < MAX_BULLETS; ++i) bullets.push_back(NULL);
-
-	spritesheet.loadFromFile("images/bub.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	sprite = Sprite::createSprite(glm::ivec2(32, 32), glm::vec2(0.25, 0.25), &spritesheet, &shaderProgram);
-	sprite->setNumberAnimations(4);
+	spritesheet.loadFromFile("images/contraspritesheet.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	sprite = Sprite::createSprite(glm::ivec2(32, 48), glm::vec2(TILESHEET_H, TILESHEET_V), &spritesheet, &shaderProgram);
+	sprite->setNumberAnimations(8);
 	
 		sprite->setAnimationSpeed(STAND_LEFT, 8);
 		sprite->addKeyframe(STAND_LEFT, glm::vec2(0.f, 0.f));
@@ -37,19 +40,53 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 		sprite->addKeyframe(STAND_RIGHT, glm::vec2(0.25f, 0.f));
 		
 		sprite->setAnimationSpeed(MOVE_LEFT, 8);
-		sprite->addKeyframe(MOVE_LEFT, glm::vec2(0.f, 0.f));
-		sprite->addKeyframe(MOVE_LEFT, glm::vec2(0.f, 0.25f));
-		sprite->addKeyframe(MOVE_LEFT, glm::vec2(0.f, 0.5f));
-		
+		sprite->addKeyframe(MOVE_LEFT, glm::vec2(0.f, 3 * TILESHEET_V));
+		sprite->addKeyframe(MOVE_LEFT, glm::vec2(7 * TILESHEET_H, 2 * TILESHEET_V));
+		sprite->addKeyframe(MOVE_LEFT, glm::vec2(6 * TILESHEET_H, 2 * TILESHEET_V));
+		sprite->addKeyframe(MOVE_LEFT, glm::vec2(5 * TILESHEET_H, 2 * TILESHEET_V));
+		sprite->addKeyframe(MOVE_LEFT, glm::vec2(4 * TILESHEET_H, 2 * TILESHEET_V));
+		sprite->addKeyframe(MOVE_LEFT, glm::vec2(5 * TILESHEET_H, 2 * TILESHEET_V));
+		sprite->addKeyframe(MOVE_LEFT, glm::vec2(6 * TILESHEET_H, 2 * TILESHEET_V));
+		sprite->addKeyframe(MOVE_LEFT, glm::vec2(7 * TILESHEET_H, 2 * TILESHEET_V));
+
 		sprite->setAnimationSpeed(MOVE_RIGHT, 8);
-		sprite->addKeyframe(MOVE_RIGHT, glm::vec2(0.25, 0.f));
-		sprite->addKeyframe(MOVE_RIGHT, glm::vec2(0.25, 0.25f));
-		sprite->addKeyframe(MOVE_RIGHT, glm::vec2(0.25, 0.5f));
+		sprite->addKeyframe(MOVE_RIGHT, glm::vec2(TILESHEET_H, 3 * TILESHEET_V));
+		sprite->addKeyframe(MOVE_RIGHT, glm::vec2(2 * TILESHEET_H, 3 * TILESHEET_V));
+		sprite->addKeyframe(MOVE_RIGHT, glm::vec2(3 * TILESHEET_H, 3 * TILESHEET_V));
+		sprite->addKeyframe(MOVE_RIGHT, glm::vec2(4 * TILESHEET_H, 3 * TILESHEET_V));
+		sprite->addKeyframe(MOVE_RIGHT, glm::vec2(5 * TILESHEET_H, 3 * TILESHEET_V));
+		sprite->addKeyframe(MOVE_RIGHT, glm::vec2(4 * TILESHEET_H, 3 * TILESHEET_V));
+		sprite->addKeyframe(MOVE_RIGHT, glm::vec2(3 * TILESHEET_H, 3 * TILESHEET_V));
+		sprite->addKeyframe(MOVE_RIGHT, glm::vec2(2 * TILESHEET_H, 3 * TILESHEET_V));
+
+		sprite->setAnimationSpeed(MOVE_RIGHT_UP, 8);
+		sprite->addKeyframe(MOVE_RIGHT_UP, glm::vec2(3 * TILESHEET_H, TILESHEET_V));
+		sprite->addKeyframe(MOVE_RIGHT_UP, glm::vec2(4 * TILESHEET_H, TILESHEET_V));
+		sprite->addKeyframe(MOVE_RIGHT_UP, glm::vec2(5 * TILESHEET_H, TILESHEET_V));
+
+		sprite->setAnimationSpeed(MOVE_RIGHT_DOWN, 8);
+		sprite->addKeyframe(MOVE_RIGHT_DOWN, glm::vec2(TILESHEET_H, 2 * TILESHEET_V));
+		sprite->addKeyframe(MOVE_RIGHT_DOWN, glm::vec2(2 * TILESHEET_H, 2 * TILESHEET_V));
+		sprite->addKeyframe(MOVE_RIGHT_DOWN, glm::vec2(3 * TILESHEET_H, 2 * TILESHEET_V));
+
+		sprite->setAnimationSpeed(MOVE_LEFT_UP, 8);
+		sprite->addKeyframe(MOVE_LEFT_UP, glm::vec2(0.f, TILESHEET_V));
+		sprite->addKeyframe(MOVE_LEFT_UP, glm::vec2(TILESHEET_H, TILESHEET_V));
+		sprite->addKeyframe(MOVE_LEFT_UP, glm::vec2(2 * TILESHEET_H, TILESHEET_V));
+
+		sprite->setAnimationSpeed(MOVE_LEFT_DOWN, 8);
+		sprite->addKeyframe(MOVE_LEFT_DOWN, glm::vec2(6 * TILESHEET_H, TILESHEET_V));
+		sprite->addKeyframe(MOVE_LEFT_DOWN, glm::vec2(7 * TILESHEET_H, TILESHEET_V));
+		sprite->addKeyframe(MOVE_LEFT_DOWN, glm::vec2(0.f, 2 * TILESHEET_V));
+
+
+
+
+
 		
 	posPlayer.x = 1;
 	sprite->changeAnimation(0);
 	tileMapDispl = tileMapPos;
-	playerShaderProgram = shaderProgram;
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
 	
 }
@@ -57,23 +94,49 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 void Player::update(int deltaTime)
 {
 	sprite->update(deltaTime);
+
+	//LEFT IS PUSHED
 	if(Game::instance().getSpecialKey(GLUT_KEY_LEFT))
 	{
-		if(sprite->animation() != MOVE_LEFT)
+		//IF PLAYER WASN'T ALREADY RUNNING, IT STARTS TO
+		if (sprite->animation() != MOVE_LEFT && sprite->animation() != MOVE_LEFT_UP 
+			&& sprite->animation() != MOVE_LEFT_DOWN) {
 			sprite->changeAnimation(MOVE_LEFT);
+		}
+
+		//IF PLAYER AIMS DIAGONAL AND PREVIOUSLY WASN'T DOING IT, IT STARTS TO
+		if (Game::instance().getSpecialKey(GLUT_KEY_UP) && sprite->animation() != MOVE_LEFT_UP) 
+			sprite->changeAnimation(MOVE_LEFT_UP);
+		else if (Game::instance().getSpecialKey(GLUT_KEY_DOWN) && sprite->animation() != MOVE_LEFT_DOWN)
+			sprite->changeAnimation(MOVE_LEFT_DOWN);
+
+		//CHECK COLLISION
 		posPlayer.x -= 2;
-		if(map->collisionMoveLeft(posPlayer, glm::ivec2(32, 32)))
+		if(map->collisionMoveLeft(posPlayer, glm::ivec2(32, 48)))
 		{
 			posPlayer.x += 2;
 			sprite->changeAnimation(STAND_LEFT);
 		}
 	}
+
+	//RIGHT IS PUSHED
 	else if(Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
 	{
-		if(sprite->animation() != MOVE_RIGHT)
+
+		//IF PLAYER WASN'T ALREADY RUNNING, IT STARTS TO
+		if(sprite->animation() != MOVE_RIGHT && sprite->animation() != MOVE_RIGHT_UP
+			&& sprite->animation() != MOVE_RIGHT_DOWN)
 			sprite->changeAnimation(MOVE_RIGHT);
+
+		//IF PLAYER AIMS DIAGONAL AND PREVIOUSLY WASN'T DOING IT, IT STARTS TO
+		if (Game::instance().getSpecialKey(GLUT_KEY_UP) && sprite->animation() != MOVE_RIGHT_UP)
+			sprite->changeAnimation(MOVE_RIGHT_UP);
+		else if (Game::instance().getSpecialKey(GLUT_KEY_DOWN) && sprite->animation() != MOVE_RIGHT_DOWN)
+			sprite->changeAnimation(MOVE_RIGHT_DOWN);
+
+		//CHECK COLLISION
 		posPlayer.x += 2;
-		if(map->collisionMoveRight(posPlayer, glm::ivec2(32, 32)))
+		if(map->collisionMoveRight(posPlayer, glm::ivec2(32, 48)))
 		{
 			posPlayer.x -= 2;
 			sprite->changeAnimation(STAND_RIGHT);
@@ -81,9 +144,11 @@ void Player::update(int deltaTime)
 	}
 	else
 	{
-		if(sprite->animation() == MOVE_LEFT)
+		if(sprite->animation() == MOVE_LEFT || sprite->animation() == MOVE_LEFT_UP
+			|| sprite->animation() == MOVE_LEFT_DOWN)
 			sprite->changeAnimation(STAND_LEFT);
-		else if(sprite->animation() == MOVE_RIGHT)
+		else if(sprite->animation() == MOVE_RIGHT || sprite->animation() == MOVE_RIGHT_UP
+			|| sprite->animation() == MOVE_RIGHT_DOWN)
 			sprite->changeAnimation(STAND_RIGHT);
 	}
 	
@@ -103,32 +168,19 @@ void Player::update(int deltaTime)
 		{
 			posPlayer.y = int(startY - 96 * sin(3.14159f * jumpAngle / 180.f));
 			if(jumpAngle > 90)
-				bJumping = !map->collisionMoveDown(posPlayer, glm::ivec2(32, 32), &posPlayer.y);
+				bJumping = !map->collisionMoveDown(posPlayer, glm::ivec2(32, 48), &posPlayer.y);
 		}
 	}
 	else
 	{
 		posPlayer.y += FALL_STEP;
-		if(map->collisionMoveDown(posPlayer, glm::ivec2(32, 32), &posPlayer.y))
+		if(map->collisionMoveDown(posPlayer, glm::ivec2(32, 48), &posPlayer.y))
 		{
 			if(Game::instance().getKey('z'))
 			{
 				bJumping = true;
 				jumpAngle = 0;
 				startY = posPlayer.y;
-			}
-		}
-	}
-
-	//bullets
-	for (int i = 0; i < MAX_BULLETS; ++i) {
-		if (bullets[i] != NULL) {
-			bullets[i]->update(deltaTime);
-
-			//should one despawn?
-			if (bullets[i]->farFromPlayer(posPlayer)) {
-				delete bullets[i];
-				bullets[i] = NULL;
 			}
 		}
 	}
@@ -147,9 +199,6 @@ void Player::update(int deltaTime)
 void Player::render()
 {
 	sprite->render();
-	for (int i = 0; i < 4; ++i) {
-		if (bullets[i] != NULL) bullets[i]->render();
-	}
 }
 
 void Player::setTileMap(TileMap *tileMap)
@@ -165,65 +214,38 @@ void Player::setPosition(const glm::vec2 &pos)
 
 
 void Player::fireBullet() {
-	int i = -1;
-	bool stop = false;
-	//check for free bullet slots
-	while (i < MAX_BULLETS-1 && !stop) {
-		++i;
-		if (bullets[i] == NULL) stop = true;
+
+
+	glm::ivec2 direction; //shooting direction
+
+	bool pressed = false; //This will tell us if the user is pressing a direction
+	if (Game::instance().getSpecialKey(GLUT_KEY_DOWN)) {
+		direction.y = 1;
+		pressed = true;
+	}
+	else if (Game::instance().getSpecialKey(GLUT_KEY_UP)) {
+		direction.y = -1;
+		pressed = true;
+	}
+	if (Game::instance().getSpecialKey(GLUT_KEY_LEFT)) {
+		direction.x = -1;
+		pressed = true;
+	}
+	else if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT)) {
+		direction.x = 1;
+		pressed = true;
 	}
 
-	if (stop == true) {
-		bullets[i] = new Bullet();
-		glm::ivec2 direction; //shooting direction
-
-		bool pressed = false; //This will tell us if the user is pressing a direction
-		if (Game::instance().getSpecialKey(GLUT_KEY_DOWN)) {
-			direction.y = 1;
-			pressed = true;
-		}
-		else if (Game::instance().getSpecialKey(GLUT_KEY_UP)) {
-			direction.y = -1;
-			pressed = true;
-		}
-		if (Game::instance().getSpecialKey(GLUT_KEY_LEFT)) {
-			direction.x = -1;
-			pressed = true;
-		}
-		else if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT)) {
-			direction.x = 1;
-			pressed = true;
-		}
-
-		//if they are not pressing any key, they will fire forwards
-		if (!pressed) {
-			if (sprite->animation() == STAND_LEFT) direction.x = -1;
-			else direction.x = 1;
-		}
-
-		bullets[i]->init(tileMapDispl, playerShaderProgram, direction, posPlayer);
-		bullets[i]->setTileMap(map);
+	//if they are not pressing any key, they will fire forwards
+	if (!pressed) {
+		if (sprite->animation() == STAND_LEFT) direction.x = -1;
+		else direction.x = 1;
 	}
+	
+	(*scene).addBullet(direction, posPlayer, true);
 }
 
-glm::ivec2 Player::getBulletPos(int i, bool &exists) {
-	glm::ivec2 bulletPos;
-	if (bullets[i] != NULL) {
-		exists = true;
-		bulletPos = bullets[i]->getBulletPos();
-	}
-	else exists = false;
-	return bulletPos;
-}
 
 glm::ivec2 Player::getPosPlayer() {
 	return posPlayer;
 }
-
-void Player::despawnBullet(int i) {
-	delete bullets[i];
-	bullets[i] = NULL;
-}
-
-
-

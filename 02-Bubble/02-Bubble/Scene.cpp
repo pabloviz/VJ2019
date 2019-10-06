@@ -8,8 +8,8 @@
 #define SCREEN_X 32
 #define SCREEN_Y 16
 
-#define INIT_PLAYER_X_TILES 4
-#define INIT_PLAYER_Y_TILES 25
+#define INIT_PLAYER_X_TILES 2
+#define INIT_PLAYER_Y_TILES 5
 
 #define MAX_BULLETS 4
 #define MAX_ENEMIES 1
@@ -20,6 +20,13 @@
 #define ENEMY_HEIGHT 32
 #define ENEMY_WIDTH 32
 
+#define PLAYER_HEIGHT 32
+#define PLAYER_WIDTH 48
+
+enum EnemyType
+{
+	RUNNING, SHOOTING, TURRET, CHASE
+};
 
 Scene::Scene()
 {
@@ -43,16 +50,17 @@ Scene::~Scene()
 void Scene::init()
 {
 	initShaders();
+	for (int i = 0; i < MAX_BULLETS; ++i) bullets.push_back(NULL);
 	map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 	player = new Player();
-	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram);
+	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
 	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
 	player->setTileMap(map);
 
 	enemies.push_back(NULL);
 	enemies[0] = new Enemy();
-	enemies[0]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, player);
-	enemies[0]->setPosition(glm::vec2(10 * map->getTileSize(), 10 * map->getTileSize()));
+	enemies[0]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, player, RUNNING, this);
+	enemies[0]->setPosition(glm::vec2(30 * map->getTileSize(), 10 * map->getTileSize()));
 	enemies[0]->setTileMap(map);
 
 	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
@@ -62,9 +70,18 @@ void Scene::init()
 void Scene::update(int deltaTime)
 {
 	currentTime += deltaTime;
-	player->update(deltaTime);
+	if (player != NULL)player->update(deltaTime);
 	if (enemies[0] != NULL) enemies[0]->update(deltaTime);
+	for (int i = 0; i < MAX_BULLETS; ++i) {
+		if (bullets[i] != NULL) {
+			bullets[i]->update(deltaTime);
+			glm::ivec2 bulletPos = bullets[i]->getBulletPos();
+			if (bulletPos.x > SCREEN_WIDTH || bulletPos.x < 0 || bulletPos.y > SCREEN_HEIGHT || bulletPos.y < 0) despawnBullet(i);
+			if (bulletPos.x > SCREEN_WIDTH || bulletPos.x < 0 || bulletPos.y > SCREEN_HEIGHT || bulletPos.y < 0) despawnBullet(i);
+		}
+	}
 	checkEnemyCollisions();
+	if (player != NULL) checkPlayerCollisions();
 }
 
 void Scene::render()
@@ -78,8 +95,11 @@ void Scene::render()
 	texProgram.setUniformMatrix4f("modelview", modelview);
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
 	map->render();
-	player->render();
+	if (player != NULL) player->render();
 	if (enemies[0] != NULL) enemies[0]->render();
+	for (int i = 0; i < MAX_BULLETS; ++i) {
+		if (bullets[i] != NULL) bullets[i]->render();
+	}
 }
 
 void Scene::initShaders()
@@ -117,23 +137,44 @@ void Scene::checkEnemyCollisions() {
 	glm::ivec2 enemyPos;
 	bool exists, hit;
 	for (int i = 0; i < MAX_BULLETS; ++i) {
-		bulletPos = player->getBulletPos(i, exists);
+		bulletPos = getBulletPos(i, exists);
 		if (exists) {
-			for (int j = 0; j < MAX_ENEMIES; ++j) {
-				if (enemies[j] != NULL) {
-					enemyPos = enemies[j]->getEnemyPos();
-					hit = collides(bulletPos, BULLET_WIDTH, BULLET_HEIGHT,
-						           enemyPos, ENEMY_WIDTH, ENEMY_HEIGHT);
-					if (hit) {
-						player->despawnBullet(i);
-						//enemies[j]->kill();    to be implemented
-						delete enemies[j];
-						enemies[j] = NULL;
+			if (bullets[i]->getFriendly()) {
+				for (int j = 0; j < MAX_ENEMIES; ++j) {
+					if (enemies[j] != NULL) {
+						enemyPos = enemies[j]->getEnemyPos();
+						hit = collides(bulletPos, BULLET_WIDTH, BULLET_HEIGHT,
+							enemyPos, ENEMY_WIDTH, ENEMY_HEIGHT);
+						if (hit) {
+							despawnBullet(i);
+							//enemies[j]->kill();    to be implemented
+							delete enemies[j];
+							enemies[j] = NULL;
+						}
 					}
 				}
 			}
 		}
+	}
+}
 
+void Scene::checkPlayerCollisions() {
+	glm::ivec2 bulletPos;
+	glm::ivec2 playerPos = player->getPosPlayer();
+	bool exists, hit;
+	for (int i = 0; i < MAX_BULLETS; ++i) {
+		bulletPos = getBulletPos(i, exists);
+		if (exists) {
+			hit = collides(bulletPos, BULLET_WIDTH, BULLET_HEIGHT,
+				playerPos, PLAYER_WIDTH, PLAYER_HEIGHT) && !bullets[i]->getFriendly(); //Descubrir en qué esquina de la caja contenedora
+			//del jugador se encuentra el punto posPlayer
+			if (hit) {
+				despawnBullet(i);
+				//enemies[j]->kill();    to be implemented
+				delete player;
+				player = NULL;
+			}
+		}
 	}
 }
 
@@ -148,4 +189,37 @@ bool Scene::collides(glm::ivec2 pos1, int width1, int height1, glm::ivec2 pos2, 
 		}
 	}
 	return false;
+}
+
+void Scene::addBullet(glm::ivec2 direction, glm::ivec2 posBullet, bool friendly) {
+	bool stop = false;
+	for (int i = 0; i < MAX_BULLETS && !stop; ++i) {
+		if (bullets[i] == NULL) {
+			stop = true;
+			bullets[i] = new Bullet();
+			bullets[i]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, direction, posBullet, friendly);
+		}
+	}
+}
+
+glm::ivec2 Scene::getBulletPos(int i, bool &exists) {
+	glm::ivec2 result;
+	if (bullets[i] != NULL) {
+		exists = true;
+		result = (*bullets[i]).getBulletPos();
+	}
+	else exists = false;
+	return result;
+}
+
+void Scene::despawnBullet(int i) {
+	delete bullets[i];
+	bullets[i] = NULL;
+}
+
+glm::ivec2 Scene::getPosPlayer() {
+	glm::ivec2 aux;
+	aux.x = -1; // if this equals -1 afterwards, it means player was NULL
+	if (player != NULL) aux = player->getPosPlayer();
+	return aux;
 }
