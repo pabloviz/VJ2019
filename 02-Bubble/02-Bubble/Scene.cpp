@@ -3,6 +3,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "Scene.h"
 #include "Game.h"
+//#include "Camera.h"
+
 
 
 #define SCREEN_X 32
@@ -32,6 +34,7 @@ Scene::Scene()
 {
 	map = NULL;
 	player = NULL;
+	camera = NULL;
 }
 
 Scene::~Scene()
@@ -63,7 +66,11 @@ void Scene::init()
 	enemies[0]->setPosition(glm::vec2(30 * map->getTileSize(), 10 * map->getTileSize()));
 	enemies[0]->setTileMap(map);
 
-	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
+	
+	camera = new Camera();
+	camera->setCameraPos(player->getPosPlayer());
+	projection = camera->calcProj();
+	//projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
 	currentTime = 0.0f;
 }
 
@@ -71,6 +78,7 @@ void Scene::update(int deltaTime)
 {
 	currentTime += deltaTime;
 	if (player != NULL)player->update(deltaTime);
+	if (camera != NULL)camera->update(deltaTime, player->getPosPlayer());
 	if (enemies[0] != NULL) enemies[0]->update(deltaTime);
 	for (int i = 0; i < MAX_BULLETS; ++i) {
 		if (bullets[i] != NULL) {
@@ -87,7 +95,7 @@ void Scene::update(int deltaTime)
 void Scene::render()
 {
 	glm::mat4 modelview;
-
+	projection = camera->calcProj();
 	texProgram.use();
 	texProgram.setUniformMatrix4f("projection", projection);
 	texProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);

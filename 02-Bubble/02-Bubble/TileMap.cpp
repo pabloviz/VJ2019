@@ -51,6 +51,7 @@ bool TileMap::loadLevel(const string &levelFile)
 	string line, tilesheetFile;
 	stringstream sstream;
 	char tile;
+	char tile1; //IMPORTANT PABLO
 	
 	fin.open(levelFile.c_str());
 	if(!fin.is_open())
@@ -67,7 +68,7 @@ bool TileMap::loadLevel(const string &levelFile)
 	getline(fin, line);
 	sstream.str(line);
 	sstream >> tilesheetFile;
-	tilesheet.loadFromFile(tilesheetFile, TEXTURE_PIXEL_FORMAT_RGBA);
+	bool b = tilesheet.loadFromFile(tilesheetFile, TEXTURE_PIXEL_FORMAT_RGBA);
 	tilesheet.setWrapS(GL_CLAMP_TO_EDGE);
 	tilesheet.setWrapT(GL_CLAMP_TO_EDGE);
 	tilesheet.setMinFilter(GL_NEAREST);
@@ -83,10 +84,11 @@ bool TileMap::loadLevel(const string &levelFile)
 		for(int i=0; i<mapSize.x; i++)
 		{
 			fin.get(tile);
+			fin.get(tile1);
 			if(tile == ' ')
 				map[j*mapSize.x+i] = 0;
 			else
-				map[j*mapSize.x+i] = tile - int('0');
+				map[j*mapSize.x+i] = (tile - int('0'))*10 + (tile1 - int('0'));
 		}
 		fin.get(tile);
 #ifndef _WIN32
@@ -115,8 +117,9 @@ void TileMap::prepareArrays(const glm::vec2 &minCoords, ShaderProgram &program)
 				// Non-empty tile
 				nTiles++;
 				posTile = glm::vec2(minCoords.x + i * tileSize, minCoords.y + j * tileSize);
-				texCoordTile[0] = glm::vec2(float((tile-1)%2) / tilesheetSize.x, float((tile-1)/2) / tilesheetSize.y);
-				texCoordTile[1] = texCoordTile[0] + tileTexSize;
+				//texCoordTile[0] = glm::vec2(float((tile-1)%2) / tilesheetSize.x, float((tile-1)/2) / tilesheetSize.y);
+				texCoordTile[0] = glm::vec2(float((tile-1) % 8) / tilesheetSize.x, float((tile-1) / 8) / tilesheetSize.y);
+ 				texCoordTile[1] = texCoordTile[0] + tileTexSize;
 				//texCoordTile[0] += halfTexel;
 				texCoordTile[1] -= halfTexel;
 				// First triangle
