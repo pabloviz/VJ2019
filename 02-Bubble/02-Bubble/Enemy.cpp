@@ -151,16 +151,21 @@ void Enemy::update(int deltaTime)
 
 	}
 	else if (type == SHOOTING) {
-		sprite->changeAnimation(STAND_LEFT);
 
 		posEnemy.y += FALL_STEP;
 		map->collisionMoveDown(posEnemy, glm::ivec2(32, 32), &posEnemy.y);
 
 		glm::ivec2 posPlayer = scene->getPosPlayer();
 		glm::ivec2 direction;
-		if (posPlayer.x != -1 && (ticks%10 == 0)) { //player must exist, and enemy fires with an interval between bullets
-			if (posPlayer.x < posEnemy.x - 30) direction.x = -1;
-			else if (posPlayer.x > posEnemy.x + 30) direction.x = 1;
+		if (posPlayer.x != -1 && (ticks%50 == 0)) { //player must exist, and enemy fires with an interval between bullets
+			if (posPlayer.x < posEnemy.x - 30) {
+				direction.x = -1;
+				sprite->changeAnimation(STAND_LEFT);
+			}
+			else if (posPlayer.x > posEnemy.x + 30) {
+				direction.x = 1;
+				sprite->changeAnimation(STAND_RIGHT);
+			}
 			else direction.x = 0;
 
 			if (posPlayer.y < posEnemy.y - 30) direction.y = -1;
@@ -171,6 +176,30 @@ void Enemy::update(int deltaTime)
 			scene->addBullet(direction, posEnemy, false);
 		}
 
+	}
+
+	else if (type == TURRET) {
+
+		glm::ivec2 posPlayer = scene->getPosPlayer();
+		glm::ivec2 direction;
+		if (posPlayer.x != -1 && (ticks % 50 == 0)) { //player must exist, and enemy fires with an interval between bullets
+			if (posPlayer.x < posEnemy.x - 30) {
+				direction.x = -1;
+				sprite->changeAnimation(STAND_LEFT);
+			}
+			else if (posPlayer.x > posEnemy.x + 30) {
+				direction.x = 1;
+				sprite->changeAnimation(STAND_RIGHT);
+			}
+			else direction.x = 0;
+
+			if (posPlayer.y < posEnemy.y - 30) direction.y = -1;
+			else if (posPlayer.y > posEnemy.y + 30) direction.y = 1;
+			else direction.y = 0;
+
+			//+-30 on enemy positions establishes the boundaries of enemy vision. Tweak if desired
+			scene->addBullet(direction, posEnemy, false);
+		}
 	}
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
 

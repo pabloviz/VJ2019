@@ -59,8 +59,8 @@ void Scene::init()
 
 	enemies.push_back(NULL);
 	enemies[0] = new Enemy();
-	enemies[0]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, player, RUNNING, this);
-	enemies[0]->setPosition(glm::vec2(30 * map->getTileSize(), 10 * map->getTileSize()));
+	enemies[0]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, player, TURRET, this);
+	enemies[0]->setPosition(glm::vec2(15 * map->getTileSize(), 20 * map->getTileSize()));
 	enemies[0]->setTileMap(map);
 
 	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
