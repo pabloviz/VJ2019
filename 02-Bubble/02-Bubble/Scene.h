@@ -8,6 +8,7 @@
 #include "Player.h"
 #include "Enemy.h"
 #include "Bullet.h"
+#include "Camera.h"
 
 
 // Scene contains all the entities of our game.
@@ -48,6 +49,7 @@ private:
 	ShaderProgram texProgram;
 	float currentTime;
 	glm::mat4 projection;
+	Camera *camera;
 	
 
 };
