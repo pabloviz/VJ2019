@@ -8,9 +8,10 @@
 
 
 #define JUMP_ANGLE_STEP 4
-#define JUMP_HEIGHT 96
+#define JUMP_HEIGHT 64
 #define FALL_STEP 4
 #define MAX_BULLETS 4
+#define PLAYER_SPEED 1
 
 #define TILESHEET_H 0.125
 #define TILESHEET_V 0.1875
@@ -122,7 +123,7 @@ void Player::update(int deltaTime)
 		}
 		else
 		{
-			posPlayer.y = int(startY - 96 * sin(3.14159f * jumpAngle / 180.f));
+			posPlayer.y = int(startY - JUMP_HEIGHT * sin(3.14159f * jumpAngle / 180.f));
 			if (jumpAngle > 90)
 				bJumping = !map->collisionMoveDown(posPlayer, glm::ivec2(32, 48), &posPlayer.y);
 		}
@@ -161,10 +162,10 @@ void Player::update(int deltaTime)
 			sprite->changeAnimation(MOVE_LEFT_DOWN);
 
 		//CHECK COLLISION
-		posPlayer.x -= 2;
+		posPlayer.x -= PLAYER_SPEED;
 		if(map->collisionMoveLeft(posPlayer, glm::ivec2(32, 48)))
 		{
-			posPlayer.x += 2;
+			posPlayer.x += PLAYER_SPEED;
 			if (!air) sprite->changeAnimation(STAND_LEFT);
 		}
 	}
@@ -187,10 +188,10 @@ void Player::update(int deltaTime)
 			sprite->changeAnimation(MOVE_RIGHT_DOWN);
 
 		//CHECK COLLISION
-		posPlayer.x += 2;
+		posPlayer.x += PLAYER_SPEED;
 		if(map->collisionMoveRight(posPlayer, glm::ivec2(32, 48)))
 		{
-			posPlayer.x -= 2;
+			posPlayer.x -= PLAYER_SPEED;
 			if (!air) sprite->changeAnimation(STAND_RIGHT);
 
 		}

@@ -5,6 +5,8 @@
 #include <glm/glm.hpp>
 #include "Texture.h"
 #include "ShaderProgram.h"
+#include "Sprite.h"
+
 
 
 // Class Tilemap is capable of loading a tile map from a text file in a very
@@ -32,6 +34,11 @@ public:
 	bool collisionMoveRight(const glm::ivec2 &pos, const glm::ivec2 &size) const;
 	bool collisionMoveDown(const glm::ivec2 &pos, const glm::ivec2 &size, int *posY) const;
 	
+	void iniWater(ShaderProgram& shaderProgram, const glm::ivec2& tileMapPos);
+	void renderWater();
+	void updateWater(int deltaTime);
+
+	
 private:
 	bool loadLevel(const string &levelFile);
 	void prepareArrays(const glm::vec2 &minCoords, ShaderProgram &program);
@@ -45,6 +52,7 @@ private:
 	Texture tilesheet;
 	glm::vec2 tileTexSize;
 	int *map;
+	vector<Sprite *> water;
 
 };
 

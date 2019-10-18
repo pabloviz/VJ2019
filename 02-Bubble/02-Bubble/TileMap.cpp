@@ -83,12 +83,16 @@ bool TileMap::loadLevel(const string &levelFile)
 	{
 		for(int i=0; i<mapSize.x; i++)
 		{
+			
 			fin.get(tile);
-			fin.get(tile1);
-			if(tile == ' ')
-				map[j*mapSize.x+i] = 0;
-			else
-				map[j*mapSize.x+i] = (tile - int('0'))*10 + (tile1 - int('0'));
+			int num = 0;
+			while(tile != ',' && tile != '\n'){
+				num = num*10 + tile - (int('0'));
+				fin.get(tile);
+			}
+			map[j*mapSize.x+i] = num;
+			
+			//map[j * mapSize.x + i] = 0;
 		}
 		fin.get(tile);
 #ifndef _WIN32
@@ -112,14 +116,16 @@ void TileMap::prepareArrays(const glm::vec2 &minCoords, ShaderProgram &program)
 		for(int i=0; i<mapSize.x; i++)
 		{
 			tile = map[j * mapSize.x + i];
-			if(tile != 0)
-			{
+			
+
+			if (tile < 4 || tile > 13) {
 				// Non-empty tile
 				nTiles++;
 				posTile = glm::vec2(minCoords.x + i * tileSize, minCoords.y + j * tileSize);
 				//texCoordTile[0] = glm::vec2(float((tile-1)%2) / tilesheetSize.x, float((tile-1)/2) / tilesheetSize.y);
-				texCoordTile[0] = glm::vec2(float((tile-1) % 8) / tilesheetSize.x, float((tile-1) / 8) / tilesheetSize.y);
- 				texCoordTile[1] = texCoordTile[0] + tileTexSize;
+				//texCoordTile[0] = glm::vec2(float((tile-1) % 16) / tilesheetSize.x, float((tile-1) / 16) / tilesheetSize.y);
+				texCoordTile[0] = glm::vec2(float((tile) % 16) / tilesheetSize.x, float((tile) / 16) / tilesheetSize.y);
+				texCoordTile[1] = texCoordTile[0] + tileTexSize;
 				//texCoordTile[0] += halfTexel;
 				texCoordTile[1] -= halfTexel;
 				// First triangle
@@ -136,7 +142,7 @@ void TileMap::prepareArrays(const glm::vec2 &minCoords, ShaderProgram &program)
 				vertices.push_back(texCoordTile[1].x); vertices.push_back(texCoordTile[1].y);
 				vertices.push_back(posTile.x); vertices.push_back(posTile.y + blockSize);
 				vertices.push_back(texCoordTile[0].x); vertices.push_back(texCoordTile[1].y);
-			}
+				}
 		}
 	}
 
@@ -149,6 +155,40 @@ void TileMap::prepareArrays(const glm::vec2 &minCoords, ShaderProgram &program)
 	texCoordLocation = program.bindVertexAttribute("texCoord", 2, 4*sizeof(float), (void *)(2*sizeof(float)));
 }
 
+void TileMap::iniWater(ShaderProgram& shaderProgram, const glm::ivec2& tileMapPos) {
+	//bool b = tilesheet.loadFromFile("images/tilesheet.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	for (int j = 0; j < mapSize.y; j++)
+	{
+		for (int i = 0; i < mapSize.x; i++)
+		{
+			int tile = map[j * mapSize.x + i];
+			if (tile >= 4 && tile <= 13) {
+				Sprite * sprite = Sprite::createSprite(glm::ivec2(16, 16), glm::vec2(0.0625f, 0.0625f), &tilesheet, &shaderProgram);
+				sprite->setNumberAnimations(1);
+				sprite->setAnimationSpeed(0, 2);
+				sprite->addKeyframe(0, glm::vec2(float((tile) % 16) / tilesheetSize.x, float((tile) / 16) / tilesheetSize.y));
+				sprite->addKeyframe(0, glm::vec2(float((tile) % 16) / tilesheetSize.x, float((tile+16) / 16) / tilesheetSize.y));
+				sprite->changeAnimation(0);
+
+				sprite->setPosition(glm::vec2(tileMapPos.x + i*16,tileMapPos.y + j*16));
+				water.push_back(sprite);
+			}
+		}
+	}
+}
+void TileMap::updateWater(int deltaTime) {
+	for (int i = 0; i < water.size(); ++i) {
+		water[i]->update(deltaTime);
+	}
+}
+
+void TileMap::renderWater() {
+	for (int i = 0; i < water.size(); ++i) {
+		water[i]->render();
+	}
+}
+
+
 // Collision tests for axis aligned bounding boxes.
 // Method collisionMoveDown also corrects Y coordinate if the box is
 // already intersecting a tile below.
@@ -160,9 +200,10 @@ bool TileMap::collisionMoveLeft(const glm::ivec2 &pos, const glm::ivec2 &size) c
 	x = pos.x / tileSize;
 	y0 = pos.y / tileSize;
 	y1 = (pos.y + size.y - 1) / tileSize;
+	y1 /= 2.0;
 	for(int y=y0; y<=y1; y++)
 	{
-		if(map[y*mapSize.x+x] != 0)
+		if(map[y * mapSize.x + x] < 2)
 			return true;
 	}
 	
@@ -176,9 +217,10 @@ bool TileMap::collisionMoveRight(const glm::ivec2 &pos, const glm::ivec2 &size) 
 	x = (pos.x + size.x - 1) / tileSize;
 	y0 = pos.y / tileSize;
 	y1 = (pos.y + size.y - 1) / tileSize;
+	y1 /= 2.0;
 	for(int y=y0; y<=y1; y++)
 	{
-		if(map[y*mapSize.x+x] != 0)
+		if(map[y*mapSize.x+x] < 2)
 			return true;
 	}
 	
@@ -194,7 +236,7 @@ bool TileMap::collisionMoveDown(const glm::ivec2 &pos, const glm::ivec2 &size, i
 	y = (pos.y + size.y - 1) / tileSize;
 	for(int x=x0; x<=x1; x++)
 	{
-		if(map[y*mapSize.x+x] != 0)
+		if(map[y*mapSize.x+x] < 2)
 		{
 			if(*posY - tileSize * y + size.y <= 4)
 			{

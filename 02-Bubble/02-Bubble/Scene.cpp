@@ -10,8 +10,8 @@
 #define SCREEN_X 32
 #define SCREEN_Y 16
 
-#define INIT_PLAYER_X_TILES 2
-#define INIT_PLAYER_Y_TILES 5
+#define INIT_PLAYER_X_TILES 4
+#define INIT_PLAYER_Y_TILES 2
 
 #define MAX_BULLETS 4
 #define MAX_ENEMIES 1
@@ -55,22 +55,25 @@ void Scene::init()
 	initShaders();
 	for (int i = 0; i < MAX_BULLETS; ++i) bullets.push_back(NULL);
 	map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+	map->iniWater(texProgram, glm::ivec2(SCREEN_X, SCREEN_Y));
 	player = new Player();
 	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
 	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
 	player->setTileMap(map);
 
+	
 	enemies.push_back(NULL);
 	enemies[0] = new Enemy();
 	enemies[0]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, player, TURRET, this);
-	enemies[0]->setPosition(glm::vec2(15 * map->getTileSize(), 20 * map->getTileSize()));
+	enemies[0]->setPosition(glm::vec2(100 * map->getTileSize(), 20 * map->getTileSize()));
 	enemies[0]->setTileMap(map);
 
 	
 	camera = new Camera();
-	camera->setCameraPos(player->getPosPlayer());
+	//camera->setCameraPos(player->getPosPlayer());
+	camera->setCameraPos(glm::ivec2(SCREEN_X, SCREEN_Y));
 	projection = camera->calcProj();
-	//projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
+	//projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1 + 100), float(SCREEN_HEIGHT - 1), 0.f);
 	currentTime = 0.0f;
 }
 
@@ -80,6 +83,7 @@ void Scene::update(int deltaTime)
 	if (player != NULL)player->update(deltaTime);
 	if (camera != NULL)camera->update(deltaTime, player->getPosPlayer());
 	if (enemies[0] != NULL) enemies[0]->update(deltaTime);
+	if (map != NULL) map->updateWater(deltaTime);
 	for (int i = 0; i < MAX_BULLETS; ++i) {
 		if (bullets[i] != NULL) {
 			bullets[i]->update(deltaTime);
@@ -103,6 +107,7 @@ void Scene::render()
 	texProgram.setUniformMatrix4f("modelview", modelview);
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
 	map->render();
+	map->renderWater();
 	if (player != NULL) player->render();
 	if (enemies[0] != NULL) enemies[0]->render();
 	for (int i = 0; i < MAX_BULLETS; ++i) {
@@ -139,6 +144,9 @@ void Scene::initShaders()
 	vShader.free();
 	fShader.free();
 }
+
+
+
 
 void Scene::checkEnemyCollisions() {
 	glm::ivec2 bulletPos;
@@ -231,3 +239,4 @@ glm::ivec2 Scene::getPosPlayer() {
 	if (player != NULL) aux = player->getPosPlayer();
 	return aux;
 }
+

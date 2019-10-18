@@ -50,7 +50,7 @@ private:
 	float currentTime;
 	glm::mat4 projection;
 	Camera *camera;
-	
+
 
 };
 
