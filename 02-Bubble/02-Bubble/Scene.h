@@ -8,7 +8,8 @@
 #include "Player.h"
 #include "Enemy.h"
 #include "Bullet.h"
-#include "Camera.h"
+#include "Powerup.h"
+#include "Boss.h"
 
 
 // Scene contains all the entities of our game.
@@ -27,13 +28,19 @@ public:
 	void render();
 	void addBullet(glm::ivec2 direction, glm::ivec2 posBullet, bool friendly);
 	glm::ivec2 getPosPlayer();
-
+    void playerDeath();
+	void playerRespawn();
+	void enemyDeath(int id);
+	void bossDeath();
+	void spawnEnemy(glm::ivec2 posSpawn, int type);
 
 private:
 	void initShaders();
 	void checkEnemyCollisions();
 	void despawnBullet(int i);
+	void despawnPowerup();
 	void checkPlayerCollisions();
+	
 
 	glm::ivec2 getBulletPos(int i, bool &exists);
 
@@ -44,13 +51,14 @@ private:
 private:
 	TileMap *map;
 	Player *player;
+	Boss *boss;
 	vector<Enemy*> enemies;
 	vector<Bullet*> bullets;
+	Powerup *powerup;
 	ShaderProgram texProgram;
 	float currentTime;
 	glm::mat4 projection;
-	Camera *camera;
-	
+	int ticks;
 
 };
 

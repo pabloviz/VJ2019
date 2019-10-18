@@ -51,7 +51,6 @@ bool TileMap::loadLevel(const string &levelFile)
 	string line, tilesheetFile;
 	stringstream sstream;
 	char tile;
-	char tile1; //IMPORTANT PABLO
 	
 	fin.open(levelFile.c_str());
 	if(!fin.is_open())
@@ -68,7 +67,7 @@ bool TileMap::loadLevel(const string &levelFile)
 	getline(fin, line);
 	sstream.str(line);
 	sstream >> tilesheetFile;
-	bool b = tilesheet.loadFromFile(tilesheetFile, TEXTURE_PIXEL_FORMAT_RGBA);
+	tilesheet.loadFromFile(tilesheetFile, TEXTURE_PIXEL_FORMAT_RGBA);
 	tilesheet.setWrapS(GL_CLAMP_TO_EDGE);
 	tilesheet.setWrapT(GL_CLAMP_TO_EDGE);
 	tilesheet.setMinFilter(GL_NEAREST);
@@ -84,11 +83,10 @@ bool TileMap::loadLevel(const string &levelFile)
 		for(int i=0; i<mapSize.x; i++)
 		{
 			fin.get(tile);
-			fin.get(tile1);
 			if(tile == ' ')
 				map[j*mapSize.x+i] = 0;
 			else
-				map[j*mapSize.x+i] = (tile - int('0'))*10 + (tile1 - int('0'));
+				map[j*mapSize.x + i] = tile - int('0');
 		}
 		fin.get(tile);
 #ifndef _WIN32
@@ -117,9 +115,8 @@ void TileMap::prepareArrays(const glm::vec2 &minCoords, ShaderProgram &program)
 				// Non-empty tile
 				nTiles++;
 				posTile = glm::vec2(minCoords.x + i * tileSize, minCoords.y + j * tileSize);
-				//texCoordTile[0] = glm::vec2(float((tile-1)%2) / tilesheetSize.x, float((tile-1)/2) / tilesheetSize.y);
-				texCoordTile[0] = glm::vec2(float((tile-1) % 8) / tilesheetSize.x, float((tile-1) / 8) / tilesheetSize.y);
- 				texCoordTile[1] = texCoordTile[0] + tileTexSize;
+				texCoordTile[0] = glm::vec2(float((tile-1)%2) / tilesheetSize.x, float((tile-1)/2) / tilesheetSize.y);
+				texCoordTile[1] = texCoordTile[0] + tileTexSize;
 				//texCoordTile[0] += halfTexel;
 				texCoordTile[1] -= halfTexel;
 				// First triangle
@@ -204,6 +201,24 @@ bool TileMap::collisionMoveDown(const glm::ivec2 &pos, const glm::ivec2 &size, i
 		}
 	}
 	
+	return false;
+}
+
+bool TileMap::detectWater(glm::ivec2 &pos, const glm::ivec2 &size) const
+{
+	int x0, x1, y;
+
+	x0 = pos.x / tileSize;
+	x1 = (pos.x + size.x - 1) / tileSize;
+	y = (pos.y + size.y) / tileSize;
+	for (int x = x0; x <= x1; x++)
+	{
+		if (map[y*mapSize.x+x] == 3)
+		{
+			return true;
+		}
+	}
+
 	return false;
 }
 

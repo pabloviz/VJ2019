@@ -1,16 +1,15 @@
-<<<<<<< HEAD
-﻿  TileMap.cpp
+﻿  Boss.cpp
+  Bullet.cpp
+  Enemy.cpp
+  Game.cpp
+  main.cpp
+  Player.cpp
+  Powerup.cpp
+  Scene.cpp
+c:\users\gerard\desktop\vj\2dgame\vj2019\02-bubble\02-bubble\scene.cpp(51): warning C4018: '<': no coinciden signed/unsigned
+  Generando código...
 SOIL.lib(image_DXT.obj) : warning LNK4099: no se encontró PDB 'vc100.pdb' con 'SOIL.lib(image_DXT.obj)' o en 'C:\Users\Gerard\Desktop\VJ\2DGame\VJ2019\02-Bubble\Debug\vc100.pdb'; se vinculará el objeto sin tener en cuenta información de depuración
 SOIL.lib(image_helper.obj) : warning LNK4099: no se encontró PDB 'vc100.pdb' con 'SOIL.lib(image_helper.obj)' o en 'C:\Users\Gerard\Desktop\VJ\2DGame\VJ2019\02-Bubble\Debug\vc100.pdb'; se vinculará el objeto sin tener en cuenta información de depuración
 SOIL.lib(SOIL.obj) : warning LNK4099: no se encontró PDB 'vc100.pdb' con 'SOIL.lib(SOIL.obj)' o en 'C:\Users\Gerard\Desktop\VJ\2DGame\VJ2019\02-Bubble\Debug\vc100.pdb'; se vinculará el objeto sin tener en cuenta información de depuración
 SOIL.lib(stb_image_aug.obj) : warning LNK4099: no se encontró PDB 'vc100.pdb' con 'SOIL.lib(stb_image_aug.obj)' o en 'C:\Users\Gerard\Desktop\VJ\2DGame\VJ2019\02-Bubble\Debug\vc100.pdb'; se vinculará el objeto sin tener en cuenta información de depuración
   02-Bubble.vcxproj -> C:\Users\Gerard\Desktop\VJ\2DGame\VJ2019\02-Bubble\Debug\02-Bubble.exe
-=======
-﻿  Scene.cpp
-C:\Users\pa3ol\Desktop\VJ\VJ2019\02-Bubble\02-Bubble\Scene.cpp(46,20): warning C4018: '<': no coinciden signed/unsigned
-SOIL.lib(image_DXT.obj) : warning LNK4099: no se encontró PDB 'vc100.pdb' con 'SOIL.lib(image_DXT.obj)' o en 'C:\Users\pa3ol\Desktop\VJ\VJ2019\02-Bubble\Debug\vc100.pdb'; se vinculará el objeto sin tener en cuenta información de depuración
-SOIL.lib(image_helper.obj) : warning LNK4099: no se encontró PDB 'vc100.pdb' con 'SOIL.lib(image_helper.obj)' o en 'C:\Users\pa3ol\Desktop\VJ\VJ2019\02-Bubble\Debug\vc100.pdb'; se vinculará el objeto sin tener en cuenta información de depuración
-SOIL.lib(SOIL.obj) : warning LNK4099: no se encontró PDB 'vc100.pdb' con 'SOIL.lib(SOIL.obj)' o en 'C:\Users\pa3ol\Desktop\VJ\VJ2019\02-Bubble\Debug\vc100.pdb'; se vinculará el objeto sin tener en cuenta información de depuración
-SOIL.lib(stb_image_aug.obj) : warning LNK4099: no se encontró PDB 'vc100.pdb' con 'SOIL.lib(stb_image_aug.obj)' o en 'C:\Users\pa3ol\Desktop\VJ\VJ2019\02-Bubble\Debug\vc100.pdb'; se vinculará el objeto sin tener en cuenta información de depuración
-  02-Bubble.vcxproj -> C:\Users\pa3ol\Desktop\VJ\VJ2019\02-Bubble\Debug\02-Bubble.exe
->>>>>>> 2a6229e80ca363501aa4a3a056c3bd7b15a02347

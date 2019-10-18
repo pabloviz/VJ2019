@@ -38,10 +38,8 @@ void Bullet::update(int deltaTime)
 {
 	sprite->update(deltaTime);
 
-	if (bulletDirection.x == 1) posBullet.x += HORIZ_VEL;
-	if (bulletDirection.x == -1) posBullet.x -= HORIZ_VEL;
-	if (bulletDirection.y == 1) posBullet.y += VERT_VEL;
-	if (bulletDirection.y == -1) posBullet.y -= VERT_VEL;
+	posBullet.x += HORIZ_VEL * bulletDirection.x;
+	posBullet.y += VERT_VEL * bulletDirection.y;
 	
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posBullet.x), float(tileMapDispl.y + posBullet.y)));
 }

@@ -12,14 +12,15 @@
 #define FALL_STEP 4
 #define MAX_BULLETS 4
 
-#define TILESHEET_H 0.125
-#define TILESHEET_V 0.1875
+#define TILESHEET_H 0.0625
+#define TILESHEET_V 0.09375
 
 
 enum PlayerAnims
 {
-	STAND_LEFT, STAND_RIGHT, MOVE_LEFT, MOVE_RIGHT, MOVE_LEFT_UP, MOVE_RIGHT_UP,
-	MOVE_LEFT_DOWN, MOVE_RIGHT_DOWN, JUMP_LEFT, JUMP_RIGHT
+	STAND_LEFT, STAND_RIGHT, STAND_RIGHT_UP, STAND_LEFT_UP, MOVE_LEFT, MOVE_RIGHT, MOVE_LEFT_UP, MOVE_RIGHT_UP,
+	MOVE_LEFT_DOWN, MOVE_RIGHT_DOWN, JUMP_LEFT, JUMP_RIGHT, DIE_LEFT, DIE_RIGHT,
+	SWIM_LEFT, SWIM_RIGHT, CROUCH_LEFT, CROUCH_RIGHT
 };
 
 
@@ -27,17 +28,27 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Sc
 {
 	bJumping = false;
 	x_pressed = false;
+	z_pressed = false;
 	this->scene = scene;
+	this->dying = false;
+	this->invulnerable = true;
+	spread = false;
 
 	spritesheet.loadFromFile("images/contraspritesheet.png", TEXTURE_PIXEL_FORMAT_RGBA);
 	sprite = Sprite::createSprite(glm::ivec2(32, 48), glm::vec2(TILESHEET_H, TILESHEET_V), &spritesheet, &shaderProgram);
-	sprite->setNumberAnimations(10);
+	sprite->setNumberAnimations(18);
 	
 		sprite->setAnimationSpeed(STAND_LEFT, 8);
 		sprite->addKeyframe(STAND_LEFT, glm::vec2(0.f, 0.f));
 		
 		sprite->setAnimationSpeed(STAND_RIGHT, 8);
-		sprite->addKeyframe(STAND_RIGHT, glm::vec2(0.25f, 0.f));
+		sprite->addKeyframe(STAND_RIGHT, glm::vec2(2 * TILESHEET_H, 0.f));
+
+		sprite->setAnimationSpeed(STAND_LEFT_UP, 8);
+		sprite->addKeyframe(STAND_LEFT_UP, glm::vec2(4 * TILESHEET_H, 0.f));
+
+		sprite->setAnimationSpeed(STAND_RIGHT_UP, 8);
+		sprite->addKeyframe(STAND_RIGHT_UP, glm::vec2(6 * TILESHEET_H, 0.f));
 		
 		sprite->setAnimationSpeed(MOVE_LEFT, 8);
 		sprite->addKeyframe(MOVE_LEFT, glm::vec2(0.f, 3 * TILESHEET_V));
@@ -91,9 +102,32 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Sc
 		sprite->addKeyframe(JUMP_RIGHT, glm::vec2(4 * TILESHEET_H, 4 * TILESHEET_V));
 		sprite->addKeyframe(JUMP_RIGHT, glm::vec2(5 * TILESHEET_H, 4 * TILESHEET_V));
 
+		sprite->setAnimationSpeed(DIE_RIGHT, 5);
+		sprite->addKeyframe(DIE_RIGHT, glm::vec2(4 * TILESHEET_H, 5 * TILESHEET_V));
+		sprite->addKeyframe(DIE_RIGHT, glm::vec2(3 * TILESHEET_H, 5 * TILESHEET_V));
+		sprite->addKeyframe(DIE_RIGHT, glm::vec2(2 * TILESHEET_H, 5 * TILESHEET_V));
+		sprite->addKeyframe(DIE_RIGHT, glm::vec2(TILESHEET_H, 5 * TILESHEET_V));
+		sprite->addKeyframe(DIE_RIGHT, glm::vec2(0.f, 5 * TILESHEET_V));
 
-
+		sprite->setAnimationSpeed(DIE_LEFT, 5);
+		sprite->addKeyframe(DIE_LEFT, glm::vec2(0.f, 6 * TILESHEET_V));
+		sprite->addKeyframe(DIE_LEFT, glm::vec2(TILESHEET_H, 6 * TILESHEET_V));
+		sprite->addKeyframe(DIE_LEFT, glm::vec2(2 * TILESHEET_H, 6 * TILESHEET_V));
+		sprite->addKeyframe(DIE_LEFT, glm::vec2(3 * TILESHEET_H, 6 * TILESHEET_V));
+		sprite->addKeyframe(DIE_LEFT, glm::vec2(4 * TILESHEET_H, 6 * TILESHEET_V));
 		
+		sprite->setAnimationSpeed(SWIM_LEFT, 8);
+		sprite->addKeyframe(SWIM_LEFT, glm::vec2(0.f, 7 * TILESHEET_V));
+
+		sprite->setAnimationSpeed(SWIM_RIGHT, 8);
+		sprite->addKeyframe(SWIM_RIGHT, glm::vec2(TILESHEET_H, 7 * TILESHEET_V));
+
+		sprite->setAnimationSpeed(CROUCH_LEFT, 8);
+		sprite->addKeyframe(CROUCH_LEFT, glm::vec2(0.f, 8 * TILESHEET_V));
+
+		sprite->setAnimationSpeed(CROUCH_RIGHT, 8);
+		sprite->addKeyframe(CROUCH_RIGHT, glm::vec2(TILESHEET_H, 8 * TILESHEET_V));
+	
 	posPlayer.x = 1;
 	sprite->changeAnimation(0);
 	tileMapDispl = tileMapPos;
@@ -104,15 +138,40 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Sc
 void Player::update(int deltaTime)
 {
 	sprite->update(deltaTime);
-	bool air = false;
+	if (!invulnerable) inv_frames = 0;
+	else ++inv_frames;
+	if (inv_frames >= 200) invulnerable = false;
+
+	air = false;
+	water = false;
+	crouch = false;
+
+	if (dying) {
+		update_death();
+		return;
+	}
+
+	//WATER LOGIC
+	if (map->detectWater(posPlayer, glm::ivec2(32, 48))) {
+		if(Game::instance().getSpecialKey(GLUT_KEY_LEFT)) sprite->changeAnimation(SWIM_LEFT);
+		else if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT)) sprite->changeAnimation(SWIM_RIGHT);
+		else if (sprite->animation() == SWIM_RIGHT) sprite->changeAnimation(SWIM_RIGHT); //FIX THIS 
+		else sprite->changeAnimation(SWIM_LEFT);
+		water = true;
+	}
 
 	//Crouch + jump, ignores collision and falls down the ground
-	if (!bJumping && Game::instance().getSpecialKey(GLUT_KEY_DOWN) && Game::instance().getKey('z')) {
-		posPlayer.y += FALL_STEP;
-		air = true;
-
+	if (!water && !bJumping && Game::instance().getSpecialKey(GLUT_KEY_DOWN) && Game::instance().getKey('z')) {
+		if (!z_pressed) {
+			posPlayer.y += FALL_STEP;
+			air = true;
+		}
+		z_pressed = true;
 	}
-	else if (bJumping)
+	else z_pressed = false;
+
+	//JUMPING LOGIC
+	if (bJumping)
 	{
 		jumpAngle += JUMP_ANGLE_STEP;
 		if (jumpAngle == 180)
@@ -143,72 +202,95 @@ void Player::update(int deltaTime)
 		else air = true;
 	}
 
+	//CROUCH LOGIC
+	if (!air && !water && Game::instance().getSpecialKey(GLUT_KEY_DOWN) && !Game::instance().getSpecialKey(GLUT_KEY_LEFT)
+		&& !Game::instance().getSpecialKey(GLUT_KEY_RIGHT)) {
+		if (sprite->animation() == CROUCH_LEFT || sprite->animation() == MOVE_LEFT 
+			|| sprite->animation() == MOVE_LEFT_UP || sprite->animation() == MOVE_LEFT_DOWN 
+			|| sprite->animation() == JUMP_LEFT || sprite->animation() == STAND_LEFT)
+			sprite->changeAnimation(CROUCH_LEFT);
+		else sprite->changeAnimation(CROUCH_RIGHT);
+		crouch = true;
+	}
+
+	
 	//LEFT IS PUSHED
-	if(Game::instance().getSpecialKey(GLUT_KEY_LEFT))
+	if (Game::instance().getSpecialKey(GLUT_KEY_LEFT))
 	{
+
 		//IF PLAYER WASN'T ALREADY RUNNING, IT STARTS TO
-		if (!air && sprite->animation() != MOVE_LEFT && sprite->animation() != MOVE_LEFT_UP 
+		if (!crouch && !water && !air && sprite->animation() != MOVE_LEFT && sprite->animation() != MOVE_LEFT_UP
 			&& sprite->animation() != MOVE_LEFT_DOWN) {
 			sprite->changeAnimation(MOVE_LEFT);
 		}
-		
+
 		else if (air && sprite->animation() != JUMP_LEFT) sprite->changeAnimation(JUMP_LEFT);
 
 		//IF PLAYER AIMS DIAGONAL AND PREVIOUSLY WASN'T DOING IT, IT STARTS TO
-		if (!air && Game::instance().getSpecialKey(GLUT_KEY_UP) && sprite->animation() != MOVE_LEFT_UP) 
+		if (!crouch && !water && !air && Game::instance().getSpecialKey(GLUT_KEY_UP) && sprite->animation() != MOVE_LEFT_UP)
 			sprite->changeAnimation(MOVE_LEFT_UP);
-		else if (! air && Game::instance().getSpecialKey(GLUT_KEY_DOWN) && sprite->animation() != MOVE_LEFT_DOWN)
+		else if (!crouch && !water && !air && Game::instance().getSpecialKey(GLUT_KEY_DOWN) && sprite->animation() != MOVE_LEFT_DOWN)
 			sprite->changeAnimation(MOVE_LEFT_DOWN);
 
 		//CHECK COLLISION
-		posPlayer.x -= 2;
-		if(map->collisionMoveLeft(posPlayer, glm::ivec2(32, 48)))
-		{
-			posPlayer.x += 2;
-			if (!air) sprite->changeAnimation(STAND_LEFT);
+		if (!crouch) {
+			posPlayer.x -= 2;
+			if (map->collisionMoveLeft(posPlayer, glm::ivec2(32, 48)))
+			{
+				posPlayer.x += 2;
+				if (!crouch && !water && !air) sprite->changeAnimation(STAND_LEFT);
+			}
 		}
 	}
 
 	//RIGHT IS PUSHED
-	else if(Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
+	else if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
 	{
 
 		//IF PLAYER WASN'T ALREADY RUNNING, IT STARTS TO
-		if(!air && sprite->animation() != MOVE_RIGHT && sprite->animation() != MOVE_RIGHT_UP
+		if (!crouch && !water && !air && sprite->animation() != MOVE_RIGHT && sprite->animation() != MOVE_RIGHT_UP
 			&& sprite->animation() != MOVE_RIGHT_DOWN)
 			sprite->changeAnimation(MOVE_RIGHT);
 
 		else if (air && sprite->animation() != JUMP_RIGHT) sprite->changeAnimation(JUMP_RIGHT);
 
 		//IF PLAYER AIMS DIAGONAL AND PREVIOUSLY WASN'T DOING IT, IT STARTS TO
-		if (!air && Game::instance().getSpecialKey(GLUT_KEY_UP) && sprite->animation() != MOVE_RIGHT_UP)
+		if (!crouch && !water && !air && Game::instance().getSpecialKey(GLUT_KEY_UP) && sprite->animation() != MOVE_RIGHT_UP)
 			sprite->changeAnimation(MOVE_RIGHT_UP);
-		else if (!air && Game::instance().getSpecialKey(GLUT_KEY_DOWN) && sprite->animation() != MOVE_RIGHT_DOWN)
+		else if (!crouch && !water && !air && Game::instance().getSpecialKey(GLUT_KEY_DOWN) && sprite->animation() != MOVE_RIGHT_DOWN)
 			sprite->changeAnimation(MOVE_RIGHT_DOWN);
 
 		//CHECK COLLISION
-		posPlayer.x += 2;
-		if(map->collisionMoveRight(posPlayer, glm::ivec2(32, 48)))
-		{
-			posPlayer.x -= 2;
-			if (!air) sprite->changeAnimation(STAND_RIGHT);
+		if (!crouch) {
+			posPlayer.x += 2;
+			if (map->collisionMoveRight(posPlayer, glm::ivec2(32, 48)))
+			{
+				posPlayer.x -= 2;
+				if (!water && !air) sprite->changeAnimation(STAND_RIGHT);
 
+			}
 		}
 	}
 	else
 	{
-		if(!air && (sprite->animation() == MOVE_LEFT || sprite->animation() == MOVE_LEFT_UP
-			|| sprite->animation() == MOVE_LEFT_DOWN || sprite->animation() == JUMP_LEFT))
+		if (!crouch && !water && !air && (sprite->animation() == MOVE_LEFT || sprite->animation() == MOVE_LEFT_UP
+			|| sprite->animation() == MOVE_LEFT_DOWN || sprite->animation() == JUMP_LEFT || sprite->animation() == CROUCH_LEFT))
 			sprite->changeAnimation(STAND_LEFT);
-		else if(!air && (sprite->animation() == MOVE_RIGHT || sprite->animation() == MOVE_RIGHT_UP
-			|| sprite->animation() == MOVE_RIGHT_DOWN || sprite->animation() == JUMP_RIGHT))
+		else if (!crouch && !water && !air && (sprite->animation() == MOVE_RIGHT || sprite->animation() == MOVE_RIGHT_UP
+			|| sprite->animation() == MOVE_RIGHT_DOWN || sprite->animation() == JUMP_RIGHT || sprite->animation() == CROUCH_RIGHT))
 			sprite->changeAnimation(STAND_RIGHT);
 		else if (air && (sprite->animation() == MOVE_LEFT || sprite->animation() == MOVE_LEFT_UP
-			|| sprite->animation() == MOVE_LEFT_DOWN || sprite->animation() == STAND_LEFT))
+			|| sprite->animation() == MOVE_LEFT_DOWN || sprite->animation() == STAND_LEFT
+			|| sprite->animation() == SWIM_LEFT || sprite->animation() == CROUCH_LEFT))
 			sprite->changeAnimation(JUMP_LEFT);
 		else if (air && (sprite->animation() == MOVE_RIGHT || sprite->animation() == MOVE_RIGHT_UP
-			|| sprite->animation() == MOVE_RIGHT_DOWN || sprite->animation() == STAND_RIGHT))
+			|| sprite->animation() == MOVE_RIGHT_DOWN || sprite->animation() == STAND_RIGHT
+			|| sprite->animation() == SWIM_RIGHT || sprite->animation() == CROUCH_RIGHT))
 			sprite->changeAnimation(JUMP_RIGHT);
+
+		if (sprite->animation() == STAND_RIGHT && Game::instance().getSpecialKey(GLUT_KEY_UP)) sprite->changeAnimation(STAND_RIGHT_UP);
+		if (sprite->animation() == STAND_LEFT && Game::instance().getSpecialKey(GLUT_KEY_UP)) sprite->changeAnimation(STAND_LEFT_UP);
+
 	}
 
 	//fire a bullet
@@ -222,9 +304,63 @@ void Player::update(int deltaTime)
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
 }
 
+void Player::update_death() {
+	if (sprite->animation() != DIE_LEFT) {
+		sprite->changeAnimation(DIE_LEFT);
+		bJumping = true;
+		jumpAngle = 0;
+		startY = posPlayer.y;
+	}
+
+	bool dead = false;
+
+	if (bJumping)
+	{
+		jumpAngle += JUMP_ANGLE_STEP;
+		if (jumpAngle == 180)
+		{
+			bJumping = false;
+			posPlayer.y = startY;
+		}
+		else
+		{
+			posPlayer.y = int(startY - 96 * sin(3.14159f * jumpAngle / 180.f));
+			if (jumpAngle > 90)
+				bJumping = !map->collisionMoveDown(posPlayer, glm::ivec2(32, 48), &posPlayer.y);
+		}
+	}
+	else
+	{
+		posPlayer.y += FALL_STEP;
+		if (map->collisionMoveDown(posPlayer, glm::ivec2(32, 48), &posPlayer.y)) {
+			--lives;
+			if (lives <= 0) {
+				//0 vides
+				scene->playerDeath();
+				dead = true;
+			}
+			else {
+				//queden vides
+				scene->playerRespawn();
+			}
+		}
+	}
+
+	if (!dead) {
+		posPlayer.x -= 2;
+		if (map->collisionMoveLeft(posPlayer, glm::ivec2(32, 48)))
+		{
+			posPlayer.x += 2;
+		}
+
+		sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
+	}
+
+}
+
 void Player::render()
 {
-	sprite->render();
+	if (inv_frames % 2 == 0) sprite->render();
 }
 
 void Player::setTileMap(TileMap *tileMap)
@@ -246,32 +382,70 @@ void Player::fireBullet() {
 
 	bool pressed = false; //This will tell us if the user is pressing a direction
 	if (Game::instance().getSpecialKey(GLUT_KEY_DOWN)) {
-		direction.y = 1;
+		direction.y = 3;
 		pressed = true;
 	}
 	else if (Game::instance().getSpecialKey(GLUT_KEY_UP)) {
-		direction.y = -1;
+		direction.y = -3;
 		pressed = true;
 	}
 	if (Game::instance().getSpecialKey(GLUT_KEY_LEFT)) {
-		direction.x = -1;
+		direction.x = -3;
 		pressed = true;
 	}
 	else if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT)) {
-		direction.x = 1;
+		direction.x = 3;
 		pressed = true;
 	}
 
 	//if they are not pressing any key, they will fire forwards
 	if (!pressed) {
-		if (sprite->animation() == STAND_LEFT) direction.x = -1;
-		else direction.x = 1;
+		if (sprite->animation() == STAND_LEFT) direction.x = -3;
+		else direction.x = 3;
+	}
+
+	//if they are crouching, they will fire forwards
+	if (crouch) {
+		direction.y = 0;
+		if (sprite->animation() == CROUCH_LEFT) direction.x = -3;
+		else direction.x = 3;
 	}
 	
-	(*scene).addBullet(direction, posPlayer, true);
+	glm::ivec2 bulletSpawn = posPlayer;
+	bulletSpawn.y += 16;
+	if (crouch || water) bulletSpawn.y += 16;
+	(*scene).addBullet(direction, bulletSpawn, true);
 }
 
 
 glm::ivec2 Player::getPosPlayer() {
 	return posPlayer;
+}
+
+bool Player::getSpread() {
+	return spread;
+}
+
+bool Player::getInvulnerable() {
+	return invulnerable;
+}
+
+void Player::setSpread(bool spread) {
+	this->spread = spread;
+}
+
+void Player::die() {
+	this->dying = true;
+}
+
+void Player::setLives(int lives) {
+	this->lives = lives;
+}
+
+bool Player::getCrouch() {
+	return crouch;
+}
+
+bool Player::getWater() {
+	return water;
 }

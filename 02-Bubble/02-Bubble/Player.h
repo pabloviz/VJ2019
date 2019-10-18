@@ -24,13 +24,32 @@ public:
 	void setPosition(const glm::vec2 &pos);
 	void fireBullet();
 
+	bool getCrouch();
+	bool getWater();
+
+	bool getSpread();
+	void setSpread(bool spread);
+
+	bool getInvulnerable();
+
+	void die();
+	void update_death();
+
+	void setLives(int lives);
+
 	glm::ivec2 getPosPlayer();
 	
 private:
 	bool bJumping;
-	bool x_pressed;
+	bool x_pressed, z_pressed;
+	bool spread;
+	bool dying;
+	bool invulnerable;
+	bool air, water, crouch;
 	glm::ivec2 tileMapDispl, posPlayer;
 	int jumpAngle, startY;
+	int inv_frames;
+	int lives;
 	Texture spritesheet;
 	Sprite *sprite;
 	TileMap *map;
