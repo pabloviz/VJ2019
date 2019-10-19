@@ -10,6 +10,7 @@
 #include "Bullet.h"
 #include "Powerup.h"
 #include "Boss.h"
+#include "Camera.h"
 
 
 // Scene contains all the entities of our game.
@@ -59,7 +60,7 @@ private:
 	float currentTime;
 	glm::mat4 projection;
 	int ticks;
-
+	Camera *camera;
 };
 
 

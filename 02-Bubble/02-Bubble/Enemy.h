@@ -24,7 +24,6 @@ public:
 	void setTileMap(TileMap *tileMap);
 	void setPosition(const glm::vec2 &pos);
 
-	void fireBullet();
 	void setDying(bool dying);
 	void updateDeath();
 
@@ -35,7 +34,8 @@ public:
 private:
 	vector<Bullet *> bullets;
 	bool bJumping;
-	glm::ivec2 tileMapDispl, posEnemy;
+	glm::ivec2 tileMapDispl;
+	glm::vec2 posEnemy;
 	int jumpAngle, startY;
 	Texture spritesheet;
 	Sprite *sprite;

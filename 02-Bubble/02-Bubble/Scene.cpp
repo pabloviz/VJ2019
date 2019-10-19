@@ -8,8 +8,8 @@
 #define SCREEN_X 32
 #define SCREEN_Y 16
 
-#define INIT_PLAYER_X_TILES 2
-#define INIT_PLAYER_Y_TILES 5
+#define INIT_PLAYER_X_TILES 4
+#define INIT_PLAYER_Y_TILES 2
 
 #define MAX_BULLETS 40
 #define MAX_ENEMIES 4
@@ -63,6 +63,7 @@ void Scene::init()
 	for (int i = 0; i < MAX_BULLETS; ++i) bullets.push_back(NULL);
 	for (int i = 0; i < MAX_ENEMIES; ++i) enemies.push_back(NULL);
 	map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+	map->iniWater(texProgram, glm::ivec2(SCREEN_X, SCREEN_Y));
 	player = new Player();
 	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
 	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
@@ -85,6 +86,12 @@ void Scene::init()
 	powerup->setTileMap(map);
 
 	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
+	
+	camera = new Camera();
+	//camera->setCameraPos(player->getPosPlayer());
+	camera->setCameraPos(glm::ivec2(SCREEN_X, SCREEN_Y));
+	projection = camera->calcProj();
+	//projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1 + 100), float(SCREEN_HEIGHT - 1), 0.f);
 	currentTime = 0.0f;
 }
 
@@ -96,12 +103,12 @@ void Scene::update(int deltaTime)
 	if (powerup != NULL) powerup->update(deltaTime);
 	if (boss != NULL) boss->update(deltaTime);
 	if (ticks % 2 == 0)
+		if (camera != NULL && player != NULL) camera->update(deltaTime, player->getPosPlayer());
+	if (enemies[0] != NULL) enemies[0]->update(deltaTime);
+	if (map != NULL) map->updateWater(deltaTime);
 	for (int i = 0; i < MAX_BULLETS; ++i) {
 		if (bullets[i] != NULL) {
 			bullets[i]->update(deltaTime);
-			glm::ivec2 bulletPos = bullets[i]->getBulletPos();
-			if (bulletPos.x > SCREEN_WIDTH || bulletPos.x < 0 || bulletPos.y > SCREEN_HEIGHT || bulletPos.y < 0) despawnBullet(i);
-			if (bulletPos.x > SCREEN_WIDTH || bulletPos.x < 0 || bulletPos.y > SCREEN_HEIGHT || bulletPos.y < 0) despawnBullet(i);
 		}
 	}
 	for (int i = 0; i < MAX_ENEMIES; ++i) {
@@ -116,6 +123,7 @@ void Scene::render()
 	glm::mat4 modelview;
 
 	texProgram.use();
+	projection = camera->calcProj();
 	texProgram.setUniformMatrix4f("projection", projection);
 	texProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
 	modelview = glm::mat4(1.0f);
@@ -123,7 +131,7 @@ void Scene::render()
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
 	map->render();
 	if (boss != NULL) boss->render();
-
+	map->renderWater();
 	if (player != NULL) player->render();
 	for (int i = 0; i < MAX_ENEMIES; ++i) {
 		if (enemies[i] != NULL) enemies[i]->render();
@@ -165,6 +173,7 @@ void Scene::initShaders()
 	fShader.free();
 }
 
+
 void Scene::checkEnemyCollisions() {
 	glm::ivec2 bulletPos;
 	glm::ivec2 enemyPos;
@@ -198,6 +207,7 @@ void Scene::checkEnemyCollisions() {
 					}
 				}
 			}
+			if (player != NULL && bullets[i] != NULL && bullets[i]->farFromPlayer(player->getPosPlayer())) despawnBullet(i);
 		}
 	}
 }
@@ -221,6 +231,8 @@ void Scene::checkPlayerCollisions() {
 				despawnBullet(i);
 				player->die();
 			}
+			else if (bullets[i]->farFromPlayer(playerPos)) despawnBullet(i);
+
 		}
 	}
 

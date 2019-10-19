@@ -25,7 +25,8 @@ private:
 	Texture spritesheet;
 	Sprite *sprite;
 	TileMap *map;
-	glm::ivec2 tileMapDispl, posPowerup;
+	glm::ivec2 tileMapDispl;
+	glm::vec2 posPowerup;
 	bool friendly;
 
 

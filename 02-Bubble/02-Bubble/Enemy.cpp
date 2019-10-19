@@ -98,11 +98,11 @@ void Enemy::update(int deltaTime)
 	if (type == RUNNING) {
 		if (sprite->animation() != MOVE_LEFT)
 			sprite->changeAnimation(MOVE_LEFT);
-		posEnemy.x -= 1;
+		posEnemy.x -= 0.5;
 
 		if (map->collisionMoveLeft(posEnemy, glm::ivec2(32, 48)))
 		{
-			posEnemy.x += 1;
+			posEnemy.x += 0.5;
 		}
 
 		posEnemy.y += FALL_STEP;

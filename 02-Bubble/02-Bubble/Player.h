@@ -19,7 +19,7 @@ public:
 	void init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Scene *scene);
 	void update(int deltaTime);
 	void render();
-	
+
 	void setTileMap(TileMap *tileMap);
 	void setPosition(const glm::vec2 &pos);
 	void fireBullet();
@@ -37,8 +37,8 @@ public:
 
 	void setLives(int lives);
 
-	glm::ivec2 getPosPlayer();
-	
+	glm::vec2 getPosPlayer();
+
 private:
 	bool bJumping;
 	bool x_pressed, z_pressed;
@@ -46,9 +46,12 @@ private:
 	bool dying;
 	bool invulnerable;
 	bool air, water, crouch;
-	glm::ivec2 tileMapDispl, posPlayer;
-	int jumpAngle, startY;
+	glm::ivec2 tileMapDispl;
+	glm::vec2 posPlayer;
+	int jumpAngle;
 	int inv_frames;
+	float startY;
+
 	int lives;
 	Texture spritesheet;
 	Sprite *sprite;

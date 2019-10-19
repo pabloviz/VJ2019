@@ -28,7 +28,8 @@ private:
 	Texture spritesheet;
 	Sprite *sprite;
 	TileMap *map;
-	glm::ivec2 tileMapDispl, bulletDirection, posBullet;
+	glm::ivec2 tileMapDispl;
+	glm::vec2 posBullet, bulletDirection;
 	bool friendly;
 
 

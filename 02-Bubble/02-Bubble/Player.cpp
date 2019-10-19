@@ -181,7 +181,7 @@ void Player::update(int deltaTime)
 		}
 		else
 		{
-			posPlayer.y = int(startY - 96 * sin(3.14159f * jumpAngle / 180.f));
+			posPlayer.y = startY - 96 * sin(3.14159f * jumpAngle / 180.f);
 			if (jumpAngle > 90)
 				bJumping = !map->collisionMoveDown(posPlayer, glm::ivec2(32, 48), &posPlayer.y);
 		}
@@ -234,10 +234,10 @@ void Player::update(int deltaTime)
 
 		//CHECK COLLISION
 		if (!crouch) {
-			posPlayer.x -= 2;
-			if (map->collisionMoveLeft(posPlayer, glm::ivec2(32, 48)))
+			posPlayer.x -= 0.75;
+			if (map->collisionMoveLeft(posPlayer, glm::ivec2(32, 32)))
 			{
-				posPlayer.x += 2;
+				posPlayer.x += 0.75;
 				if (!crouch && !water && !air) sprite->changeAnimation(STAND_LEFT);
 			}
 		}
@@ -262,10 +262,10 @@ void Player::update(int deltaTime)
 
 		//CHECK COLLISION
 		if (!crouch) {
-			posPlayer.x += 2;
-			if (map->collisionMoveRight(posPlayer, glm::ivec2(32, 48)))
+			posPlayer.x += 0.75;
+			if (map->collisionMoveRight(posPlayer, glm::ivec2(32, 32)))
 			{
-				posPlayer.x -= 2;
+				posPlayer.x -= 0.75;
 				if (!water && !air) sprite->changeAnimation(STAND_RIGHT);
 
 			}
@@ -324,7 +324,7 @@ void Player::update_death() {
 		}
 		else
 		{
-			posPlayer.y = int(startY - 96 * sin(3.14159f * jumpAngle / 180.f));
+			posPlayer.y = startY - 96 * sin(3.14159f * jumpAngle / 180.f);
 			if (jumpAngle > 90)
 				bJumping = !map->collisionMoveDown(posPlayer, glm::ivec2(32, 48), &posPlayer.y);
 		}
@@ -348,7 +348,7 @@ void Player::update_death() {
 
 	if (!dead) {
 		posPlayer.x -= 2;
-		if (map->collisionMoveLeft(posPlayer, glm::ivec2(32, 48)))
+		if (map->collisionMoveLeft(posPlayer, glm::ivec2(32, 32)))
 		{
 			posPlayer.x += 2;
 		}
@@ -418,7 +418,7 @@ void Player::fireBullet() {
 }
 
 
-glm::ivec2 Player::getPosPlayer() {
+glm::vec2 Player::getPosPlayer() {
 	return posPlayer;
 }
 
