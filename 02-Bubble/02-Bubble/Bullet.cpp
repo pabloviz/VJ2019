@@ -16,8 +16,8 @@ enum BulletAnims
 	FIRE
 };
 
-void Bullet::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, glm::ivec2 &direction, 
-				  glm::ivec2 &posPlayer, bool friendly)
+void Bullet::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, float &angle, 
+				  glm::vec2 &posPlayer, bool friendly)
 {
 	this->friendly = friendly;
 	spritesheet.loadFromFile("images/bullet.png", TEXTURE_PIXEL_FORMAT_RGBA);
@@ -28,7 +28,7 @@ void Bullet::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, gl
 	sprite->addKeyframe(FIRE, glm::vec2(0.f, 0.f));
 	sprite->changeAnimation(FIRE);
 	tileMapDispl = tileMapPos;
-	bulletDirection = direction;
+	this->angle = angle;
 	posBullet = posPlayer;
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posBullet.x), float(tileMapDispl.y + posBullet.y)));
 	
@@ -38,8 +38,8 @@ void Bullet::update(int deltaTime)
 {
 	sprite->update(deltaTime);
 
-	posBullet.x += HORIZ_VEL * bulletDirection.x;
-	posBullet.y += VERT_VEL * bulletDirection.y;
+	posBullet.x += HORIZ_VEL * -cos(angle);
+	posBullet.y += VERT_VEL * sin(angle);
 	
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posBullet.x), float(tileMapDispl.y + posBullet.y)));
 }
@@ -63,8 +63,8 @@ void Bullet::setPosition(const glm::vec2 &pos)
 
 bool Bullet::farFromPlayer(const glm::vec2 &posPlayer) {
 	glm::vec2 aux = posPlayer;
-	if ((posBullet.x > (aux.x + 500)) || (posBullet.x < (aux.x - 500))) return true;
-	if ((posBullet.y > (aux.y + 500)) || (posBullet.y < (aux.y - 500))) return true;
+	if ((posBullet.x > (aux.x + 150)) || (posBullet.x < (aux.x - 150))) return true;
+	if ((posBullet.y > (aux.y + 150)) || (posBullet.y < (aux.y - 150))) return true;
 	else return false;
 
 }

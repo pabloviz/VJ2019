@@ -20,8 +20,8 @@
 #define ENEMY_HEIGHT 32
 #define ENEMY_WIDTH 32
 
-#define PLAYER_HEIGHT 32
-#define PLAYER_WIDTH 48
+#define PLAYER_HEIGHT 48
+#define PLAYER_WIDTH 32
 
 #define POWERUP_HEIGHT 16
 #define POWERUP_WIDTH 32
@@ -71,12 +71,12 @@ void Scene::init()
 	player->setLives(PLAYER_LIVES);
 	
 	enemies[0] = new Enemy();
-	enemies[0]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, player, RUNNING, this, 0);
-	enemies[0]->setPosition(glm::vec2(15 * map->getTileSize(), 20 * map->getTileSize()));
+	enemies[0]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, SHOOTING, this, 0);
+	enemies[0]->setPosition(glm::vec2(15 * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
 	enemies[0]->setTileMap(map);
 
 	boss = new Boss();
-	boss->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, player, this);
+	boss->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
 	boss->setPosition(glm::vec2(20 * map->getTileSize(), 2 * map->getTileSize()));
 	boss->setTileMap(map);
 
@@ -105,7 +105,10 @@ void Scene::update(int deltaTime)
 	if (ticks % 2 == 0)
 		if (camera != NULL && player != NULL) camera->update(deltaTime, player->getPosPlayer());
 	if (enemies[0] != NULL) enemies[0]->update(deltaTime);
-	if (map != NULL) map->updateWater(deltaTime);
+	if (map != NULL) {
+		map->updateWater(deltaTime);
+		map->updateBridges(deltaTime, player->getPosPlayer());
+	}
 	for (int i = 0; i < MAX_BULLETS; ++i) {
 		if (bullets[i] != NULL) {
 			bullets[i]->update(deltaTime);
@@ -130,6 +133,8 @@ void Scene::render()
 	texProgram.setUniformMatrix4f("modelview", modelview);
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
 	map->render();
+	map->renderWater();
+	map->renderBridges();
 	if (boss != NULL) boss->render();
 	map->renderWater();
 	if (player != NULL) player->render();
@@ -216,8 +221,15 @@ void Scene::checkPlayerCollisions() {
 	glm::ivec2 bulletPos;
 	glm::ivec2 playerPos = player->getPosPlayer();
 	//ADJUSTING HITBOXES
-	if (player->getCrouch() || player->getWater()) playerPos.y += 32;
-	else playerPos.y += 16;
+	int height = PLAYER_HEIGHT;
+	if (player->getCrouch() || player->getWater()) {
+		playerPos.y += 32;
+		height -= 32;
+	}
+	else {
+		playerPos.y += 16;
+		height -= 16;
+	}
 
 	bool exists, hit;
 
@@ -225,8 +237,7 @@ void Scene::checkPlayerCollisions() {
 		bulletPos = getBulletPos(i, exists);
 		if (exists) {
 			hit = collides(bulletPos, BULLET_WIDTH, BULLET_HEIGHT,
-				playerPos, PLAYER_WIDTH, PLAYER_HEIGHT) && !bullets[i]->getFriendly(); //Descubrir en qué esquina de la caja contenedora
-			//del jugador se encuentra el punto posPlayer
+				playerPos, PLAYER_WIDTH, height) && !bullets[i]->getFriendly();
 			if (hit) {
 				despawnBullet(i);
 				player->die();
@@ -271,26 +282,20 @@ bool Scene::collides(glm::ivec2 pos1, int width1, int height1, glm::ivec2 pos2, 
 	return false;
 }
 
-void Scene::addBullet(glm::ivec2 direction, glm::ivec2 posBullet, bool friendly) {
+void Scene::addBullet (float angle, glm::vec2 posBullet, bool friendly) {
 	int stop = 1;
 	bool spread = false, cond = false;
 	if (friendly) spread = player->getSpread();
 	if (spread) {
 		stop = 5;
-		
-		if (direction.x == 0) {
-			direction.x -= 2;
-			cond = true;
-		}
-		else direction.y -= 2;
-	}
+		angle -= 2 * 0.436; //25 degrees * 2
+	} 
 
 	for (int i = 0; i < MAX_BULLETS && stop != 0; ++i) {
 		if (bullets[i] == NULL) {
 			bullets[i] = new Bullet();
-			bullets[i]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, direction, posBullet, friendly);
-			if (!cond)direction.y++;
-			if (cond)direction.x++;
+			bullets[i]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, angle, posBullet, friendly);
+			angle += 0.436;
 			--stop;
 
 		}
@@ -350,7 +355,7 @@ void Scene::spawnEnemy(glm::ivec2 posSpawn, int type) {
 	for (int i = 0; i < MAX_ENEMIES && !stop; ++i) {
 		if (enemies[i] == NULL) {
 			enemies[i] = new Enemy();
-			enemies[i]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, player, type, this, i);
+			enemies[i]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, type, this, i);
 			enemies[i]->setPosition(posSpawn);
 			enemies[i]->setTileMap(map);
 			stop = true;

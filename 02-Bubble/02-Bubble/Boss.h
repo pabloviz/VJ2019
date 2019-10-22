@@ -13,7 +13,7 @@ class Boss
 {
 
 public:
-	void init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Player *player, Scene *scene);
+	void init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Scene *scene);
 	void update(int deltaTime);
 	void render();
 
@@ -36,7 +36,6 @@ private:
 	Sprite *sprite;
 	TileMap *map;
 	ShaderProgram playerShaderProgram;
-	Player *player;
 	Scene *scene;
 	int ticks, deathTicks;
 	bool dying;

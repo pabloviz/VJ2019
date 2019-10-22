@@ -17,7 +17,7 @@ class Enemy
 {
 
 public:
-	void init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Player *player, int type, Scene *scene, int id);
+	void init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, int type, Scene *scene, int id);
 	void update(int deltaTime);
 	void render();
 
@@ -41,12 +41,12 @@ private:
 	Sprite *sprite;
 	TileMap *map;
 	ShaderProgram playerShaderProgram;
-	Player *player;
 	int type; //what type of enemy is it?
 	Scene *scene;
 	int ticks, deathTicks;
 	int id;
 	bool dying;
+	float angle;
 };
 
 

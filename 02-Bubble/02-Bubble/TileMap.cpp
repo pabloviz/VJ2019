@@ -117,7 +117,25 @@ void TileMap::prepareArrays(const glm::vec2 &minCoords, ShaderProgram &program)
 		{
 			tile = map[j * mapSize.x + i];
 
+			if (tile == 96) { //inici de pont
+				vector<Bridge*> newbridge;
+				int delay = 40;
+				for (int b = 0; b < 8; ++b) {
+					Bridge* br = new Bridge();
+					br->init(program, tile + (b % 2) + 1, tilesheetSize.x, tilesheetSize.y, delay, b);
+					br->setPos(glm::vec2(minCoords.x + (i + b) * 16, minCoords.y + j * 16));
+					br->setMapPos(j * mapSize.x + i + b);
+					map[j * mapSize.x + i + b] = 94; //just for colisions
+					//map[(j + 1) * mapSize.x + i + b] = 114;
+					newbridge.push_back(br);
+					if (b % 2) delay += 40;
+				}
+				map[j * mapSize.x + i + 7] = 112;
+				//map[(j + 1) * mapSize.x + i] = 113;
+				//map[(j + 1) * mapSize.x + i + 7] = 115;
+				bridges.push_back(newbridge);
 
+			}
 			if (tile < 4 || tile > 13) {
 				// Non-empty tile
 				nTiles++;
@@ -188,6 +206,36 @@ void TileMap::renderWater() {
 	}
 }
 
+void TileMap::updateBridges(int deltaTime, glm::ivec2 posplayer) {
+	for (int i = 0; i < bridges.size(); ++i) {
+
+		if (bridges[i][0]->getPos().x < posplayer.x + 32 && bridges[i][0]->getDestroy() == false)
+			bridges[i][0]->setDestroy(1);
+
+		if (bridges[i][0]->getDestroy()) {
+			for (int j = 0; j < bridges[i].size(); j++) {
+				bridges[i][j]->setDestroy((j % 2) + 1);
+			}
+		}
+
+		for (int j = 0; j < bridges[i].size(); ++j) {
+			bridges[i][j]->updateBridge(deltaTime);
+			if (bridges[i][j]->getDelay() <= 0) {
+				map[bridges[i][j]->getMapPos()] = 78; //no colision78
+			}
+		}
+
+
+	}
+}
+
+void TileMap::renderBridges() {
+	for (int i = 0; i < bridges.size(); ++i) {
+		for (int j = bridges[i].size() - 1; j >= 0; --j) {
+			if (j != 0 || !bridges[i][j]->getDestroy()) bridges[i][j]->renderBridge();
+		}
+	}
+}
 
 // Collision tests for axis aligned bounding boxes.
 // Method collisionMoveDown also corrects Y coordinate if the box is
@@ -203,9 +251,9 @@ bool TileMap::collisionMoveLeft(const glm::vec2 &pos, const glm::ivec2 &size) co
 	//y1 /= 2.0;
 	for (int y = y0; y <= y1; y++)
 	{
-		if (map[y * mapSize.x + x] < 2) {
+		int col = map[y * mapSize.x + x];
+		if (col < 2 || col == 97 || col == 98)
 			return true;
-		}
 	}
 
 	return false;
@@ -221,7 +269,8 @@ bool TileMap::collisionMoveRight(const glm::vec2 &pos, const glm::ivec2 &size) c
 	//y1 /= 2.0;
 	for (int y = y0; y <= y1; y++)
 	{
-		if (map[y*mapSize.x + x] < 2)
+		int col = map[y * mapSize.x + x];
+		if (col < 2 || col == 97 || col == 98)
 			return true;
 	}
 
@@ -237,12 +286,14 @@ bool TileMap::collisionMoveDown(const glm::vec2 &pos, const glm::ivec2 &size, fl
 	y = ((pos.y + size.y - 1) / tileSize);
 	for (int x = x0; x <= x1; x++)
 	{
-		if (map[y*mapSize.x + x] < 2 || map[y*mapSize.x + x] == 14)
-		{
-			if (*posY - tileSize * y + size.y <= 5)
+		int col = map[y * mapSize.x + x];
+		if (col < 2 || col == 97 || col == 98 || col == 94 || col == 14) {
 			{
-				*posY = tileSize * y - size.y;
-				return true;
+				if (*posY - tileSize * y + size.y <= 4)
+				{
+					*posY = tileSize * y - size.y;
+					return true;
+				}
 			}
 		}
 	}

@@ -28,15 +28,15 @@ enum EnemyType
 };
 
 
-void Enemy::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Player *player, int type, Scene *scene, int id)
+void Enemy::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, int type, Scene *scene, int id)
 {
 	this->id = id;
-	this->player = player;
 	this->type = type;
 	this->scene = scene;
 	this->ticks = 0;
 	this->deathTicks = 0;
 	this->dying = false;
+
 
 	bJumping = false;
 
@@ -113,73 +113,72 @@ void Enemy::update(int deltaTime)
 
 		posEnemy.y += FALL_STEP;
 		map->collisionMoveDown(posEnemy, glm::ivec2(32, 48), &posEnemy.y);
-		glm::ivec2 posPlayer = scene->getPosPlayer();
-		glm::ivec2 direction;
-		glm::ivec2 posEnemyAux = posEnemy;
-		posEnemyAux.y += 16;
+		glm::vec2 posPlayer = scene->getPosPlayer();
+		glm::vec2 posAux;
+		glm::vec2 posEnemyAux = posEnemy;
+		float angle;
 		
 		if (posPlayer.x != -1) { //player must exist, and enemy fires with an interval between bullets
 			
-			if (posPlayer.x < posEnemy.x - 30) {
-				direction.x = -1;
-				sprite->changeAnimation(SHOOTL);
-				if (posPlayer.y < posEnemy.y - 30) {
-					direction.y = -1;
-					sprite->changeAnimation(SHOOTUL);
-				}
-				else if (posPlayer.y > posEnemy.y + 30) {
-					direction.y = 1;
-					sprite->changeAnimation(SHOOTDL);
-				}
-				else direction.y = 0;
-				if (ticks % 50 == 0)
-				scene->addBullet(direction, posEnemyAux, false);
+			posAux.x = posPlayer.x - posEnemy.x;
+			posAux.y = posPlayer.y - posEnemy.y;
+			angle = -atan(posAux.y / posAux.x);
+			if (posPlayer.x > posEnemy.x) angle += 3.14f;
 
-			}
-			else if (posPlayer.x > posEnemy.x + 30) {
-				direction.x = 1;
+			if (cos(angle) < 0) {
+				posEnemyAux.x += 25;
 				sprite->changeAnimation(SHOOTR);
-				if (posPlayer.y < posEnemy.y - 30) {
-					direction.y = -1;
-					sprite->changeAnimation(SHOOTUR);
-				}
-				else if (posPlayer.y > posEnemy.y + 30) {
-					direction.y = 1;
+				if (sin(angle) > 0.5f) {
 					sprite->changeAnimation(SHOOTDR);
 				}
-				else direction.y = 0;
-				if (ticks % 50 == 0)
-				scene->addBullet(direction, posEnemyAux, false);
-
+				else if (sin(angle) < -0.5f) {
+					sprite->changeAnimation(SHOOTUR);
+				}
 			}
-			//+-30 on enemy positions establishes the boundaries of enemy vision. Tweak if desired
+
+			else {
+				sprite->changeAnimation(SHOOTL);
+				if (sin(angle) > 0.5f) {
+					sprite->changeAnimation(SHOOTDL);
+				}
+				else if (sin(angle) < -0.5f) {
+					sprite->changeAnimation(SHOOTUL);
+				}
+			}
+
+			posEnemyAux.y += 16;
+			if (ticks % 50 == 0)
+			scene->addBullet(angle, posEnemyAux, false);
 		}
 
 	}
 
-	else if (type == TURRET) {
+	if (type == CHASE) {
 
-		glm::ivec2 posPlayer = scene->getPosPlayer();
-		glm::ivec2 direction;
-		if (posPlayer.x != -1 && (ticks % 50 == 0)) { //player must exist, and enemy fires with an interval between bullets
-			if (posPlayer.x < posEnemy.x - 30) {
-				direction.x = -1;
-				//sprite->changeAnimation(STAND_LEFT);
-			}
-			else if (posPlayer.x > posEnemy.x + 30) {
-				direction.x = 1;
-				//sprite->changeAnimation(STAND_RIGHT);
-			}
-			else direction.x = 0;
+		glm::vec2 posPlayer = scene->getPosPlayer();
+		glm::vec2 posAux;
+		glm::vec2 posEnemyAux = posEnemy;
+		float angle;
 
-			if (posPlayer.y < posEnemy.y - 30) direction.y = -1;
-			else if (posPlayer.y > posEnemy.y + 30) direction.y = 1;
-			else direction.y = 0;
+		if (posPlayer.x != -1) { //player must exist, and enemy fires with an interval between bullets
 
-			//+-30 on enemy positions establishes the boundaries of enemy vision. Tweak if desired
-			scene->addBullet(direction, posEnemy, false);
+			posAux.x = posPlayer.x - posEnemy.x;
+			posAux.y = posPlayer.y - posEnemy.y;
+			angle = -atan(posAux.y / posAux.x);
+			if (posPlayer.x > posEnemy.x) angle += 3.14f;
+
+			this->angle = angle;
+
+			posEnemyAux.y += 16;
+			if (ticks % 500 == 0)
+				scene->addBullet(angle, posEnemy, false);
+
+			posEnemy.y += sin(angle)*0.2f;
+			posEnemy.x -= cos(angle)*0.2f;
 		}
+
 	}
+
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));
 
 }

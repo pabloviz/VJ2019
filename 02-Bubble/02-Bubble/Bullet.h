@@ -12,7 +12,7 @@ class Bullet
 {
 
 public:
-	void init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, glm::ivec2 &direction, glm::ivec2 &posPlayer, bool friendly);
+	void init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, float &angle, glm::vec2 &posPlayer, bool friendly);
 	void update(int deltaTime);
 	void render();
 	void setTileMap(TileMap *tilemap);
@@ -29,7 +29,8 @@ private:
 	Sprite *sprite;
 	TileMap *map;
 	glm::ivec2 tileMapDispl;
-	glm::vec2 posBullet, bulletDirection;
+	glm::vec2 posBullet;
+	float angle;
 	bool friendly;
 
 

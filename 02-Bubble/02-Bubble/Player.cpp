@@ -181,7 +181,7 @@ void Player::update(int deltaTime)
 		}
 		else
 		{
-			posPlayer.y = startY - 96 * sin(3.14159f * jumpAngle / 180.f);
+			posPlayer.y = startY - 96 * sin(3.14159f * jumpAngle / 180.f) - 1;
 			if (jumpAngle > 90)
 				bJumping = !map->collisionMoveDown(posPlayer, glm::ivec2(32, 48), &posPlayer.y);
 		}
@@ -235,11 +235,7 @@ void Player::update(int deltaTime)
 		//CHECK COLLISION
 		if (!crouch) {
 			posPlayer.x -= 0.75;
-			if (map->collisionMoveLeft(posPlayer, glm::ivec2(32, 32)))
-			{
-				posPlayer.x += 0.75;
-				if (!crouch && !water && !air) sprite->changeAnimation(STAND_LEFT);
-			}
+			
 		}
 	}
 
@@ -263,12 +259,7 @@ void Player::update(int deltaTime)
 		//CHECK COLLISION
 		if (!crouch) {
 			posPlayer.x += 0.75;
-			if (map->collisionMoveRight(posPlayer, glm::ivec2(32, 32)))
-			{
-				posPlayer.x -= 0.75;
-				if (!water && !air) sprite->changeAnimation(STAND_RIGHT);
-
-			}
+			
 		}
 	}
 	else
@@ -378,24 +369,29 @@ void Player::setPosition(const glm::vec2 &pos)
 void Player::fireBullet() {
 
 
-	glm::ivec2 direction; //shooting direction
-
+	glm::vec2 direction; //shooting direction
+	float angle;
 	bool pressed = false; //This will tell us if the user is pressing a direction
+	bool reverse = false;
 	if (Game::instance().getSpecialKey(GLUT_KEY_DOWN)) {
 		direction.y = 3;
 		pressed = true;
+		if (!crouch) reverse = true;
 	}
 	else if (Game::instance().getSpecialKey(GLUT_KEY_UP)) {
 		direction.y = -3;
 		pressed = true;
+		reverse = true;
 	}
 	if (Game::instance().getSpecialKey(GLUT_KEY_LEFT)) {
 		direction.x = -3;
 		pressed = true;
+		reverse = false;
 	}
 	else if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT)) {
 		direction.x = 3;
 		pressed = true;
+		reverse = false;
 	}
 
 	//if they are not pressing any key, they will fire forwards
@@ -411,10 +407,16 @@ void Player::fireBullet() {
 		else direction.x = 3;
 	}
 	
+	if (sprite->animation() == STAND_RIGHT || sprite->animation() == MOVE_RIGHT || sprite->animation() == MOVE_RIGHT_DOWN ||
+		sprite->animation() == MOVE_RIGHT_UP || sprite->animation() == JUMP_RIGHT || sprite->animation() == CROUCH_RIGHT ||
+		sprite->animation() == SWIM_RIGHT)
+		reverse = true;
+
+	angle = -atan(direction.y / direction.x) + (reverse * 3.14f);
 	glm::ivec2 bulletSpawn = posPlayer;
 	bulletSpawn.y += 16;
 	if (crouch || water) bulletSpawn.y += 16;
-	(*scene).addBullet(direction, bulletSpawn, true);
+	scene->addBullet(angle, bulletSpawn, true);
 }
 
 

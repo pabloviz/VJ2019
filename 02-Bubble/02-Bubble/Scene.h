@@ -6,6 +6,7 @@
 #include "ShaderProgram.h"
 #include "TileMap.h"
 #include "Player.h"
+#include "PlayerTV.h"
 #include "Enemy.h"
 #include "Bullet.h"
 #include "Powerup.h"
@@ -27,7 +28,7 @@ public:
 	void init();
 	void update(int deltaTime);
 	void render();
-	void addBullet(glm::ivec2 direction, glm::ivec2 posBullet, bool friendly);
+	void addBullet(float angle, glm::vec2 posBullet, bool friendly);
 	glm::ivec2 getPosPlayer();
     void playerDeath();
 	void playerRespawn();

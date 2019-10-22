@@ -6,6 +6,7 @@
 #include "Texture.h"
 #include "ShaderProgram.h"
 #include "Sprite.h"
+#include "Bridge.h"
 
 
 
@@ -39,6 +40,9 @@ public:
 	void iniWater(ShaderProgram& shaderProgram, const glm::ivec2& tileMapPos);
 	void renderWater();
 	void updateWater(int deltaTime);
+	void iniBridges(ShaderProgram& shaderProgram, const glm::ivec2& tileMapPos);
+	void renderBridges();
+	void updateBridges(int deltaTime, glm::ivec2 posplayer);
 
 	
 private:
@@ -55,6 +59,8 @@ private:
 	glm::vec2 tileTexSize;
 	int *map;
 	vector<Sprite *> water;
+	vector<vector <Bridge *> > bridges;
+
 
 };
 

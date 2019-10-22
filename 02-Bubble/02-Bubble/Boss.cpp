@@ -22,9 +22,8 @@ enum EnemyType
 };
 
 
-void Boss::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Player *player, Scene *scene)
+void Boss::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Scene *scene)
 {
-	this->player = player;
 	this->scene = scene;
 	this->ticks = 0;
 	this->deathTicks = 0;
@@ -66,29 +65,22 @@ void Boss::update(int deltaTime)
 		return;
 	}
 
-	glm::ivec2 posPlayer = scene->getPosPlayer();
-	glm::ivec2 direction;
+	glm::vec2 posPlayer = scene->getPosPlayer();
+	glm::vec2 posAux;
+	float angle;
 
 	//FIRE BULLETS
 	if (posPlayer.x != -1 && (ticks % 20 == 0) && sprite->animation() == OPEN) { 
 		//player must exist, and enemy fires with an interval between bullets
-		if (posPlayer.x < posBoss.x - 30) {
-			direction.x = -1;
-		}
-		else if (posPlayer.x > posBoss.x + 30) {
-			direction.x = 1;
-		}
-		else direction.x = 0;
 
-		if (posPlayer.y < posBoss.y - 30) direction.y = -1;
-		else if (posPlayer.y > posBoss.y + 30) direction.y = 1;
-		else direction.y = 0;
+		posAux.x = posPlayer.x - posBoss.x;
+		posAux.y = posPlayer.y - posBoss.y;
+		angle = -atan(posAux.y / posAux.x);
 
-		//+-30 on enemy positions establishes the boundaries of enemy vision. Tweak if desired
 		glm::ivec2 posBossAux = posBoss;
 		posBossAux.x += 2 * 16;
 		posBossAux.y += 5 * 16;
-		scene->addBullet(direction, posBossAux, false);
+		scene->addBullet(angle, posBossAux, false);
 	}
 
 	//SPAWN LARVAS (TBI)

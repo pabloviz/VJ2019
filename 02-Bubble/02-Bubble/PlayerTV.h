@@ -49,7 +49,7 @@ private:
 	glm::ivec2 tileMapDispl;
 	glm::vec2 posPlayer;
 	int jumpAngle;
-	float startY;
+	float startY, angle;
 	int inv_frames;
 	int lives;
 	Texture spritesheet;
