@@ -12,7 +12,6 @@
 #define INIT_PLAYER_Y_TILES 2
 
 #define MAX_BULLETS 40
-#define MAX_ENEMIES 4
 
 #define BULLET_HEIGHT 8
 #define BULLET_WIDTH 8
@@ -30,6 +29,8 @@
 #define BOSS_WIDTH 32
 
 #define PLAYER_LIVES 2
+
+#define TILE_SIZE 16
 
 enum EnemyType
 {
@@ -55,30 +56,33 @@ Scene::~Scene()
 }
 
 
-void Scene::init()
+void Scene::init() //changed
 {
 	initShaders();
 	ticks = 0;
 
-	for (int i = 0; i < MAX_BULLETS; ++i) bullets.push_back(NULL);
-	for (int i = 0; i < MAX_ENEMIES; ++i) enemies.push_back(NULL);
+	
 	map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 	map->iniWater(texProgram, glm::ivec2(SCREEN_X, SCREEN_Y));
+	obj = new ObjectMap("levels/obj01.txt");
+	maxEnemies = obj->getSize();
+	for (int i = 0; i < MAX_BULLETS; ++i) bullets.push_back(NULL);
+
+	for (int i = 0; i < maxEnemies; ++i) {
+		enemies.push_back(NULL);
+		spawnedEnemies.push_back(false);
+	}
+
 	player = new Player();
 	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
 	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
 	player->setTileMap(map);
 	player->setLives(PLAYER_LIVES);
-	
-	enemies[0] = new Enemy();
-	enemies[0]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, SHOOTING, this, 0);
-	enemies[0]->setPosition(glm::vec2(15 * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
-	enemies[0]->setTileMap(map);
 
-	boss = new Boss();
-	boss->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
-	boss->setPosition(glm::vec2(20 * map->getTileSize(), 2 * map->getTileSize()));
-	boss->setTileMap(map);
+	//boss = new Boss();
+	//boss->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
+	//boss->setPosition(glm::vec2(20 * map->getTileSize(), 2 * map->getTileSize()));
+	//boss->setTileMap(map);
 
 	powerup = new Powerup();
 	powerup->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram);
@@ -114,7 +118,20 @@ void Scene::update(int deltaTime)
 			bullets[i]->update(deltaTime);
 		}
 	}
-	for (int i = 0; i < MAX_ENEMIES; ++i) {
+	for (int i = 0; i < maxEnemies; ++i) {
+		if (spawnedEnemies[i] == false) {
+			glm::vec2 posEnemy = obj->getEnemyPos(i);
+			posEnemy.x *= TILE_SIZE;
+			posEnemy.y *= TILE_SIZE;
+			glm::vec2 posPlayer = player->getPosPlayer();
+			if (posPlayer.x >= posEnemy.x - (TILE_SIZE * 15)) {
+				spawnedEnemies[i] = true;
+				enemies[i] = new Enemy();
+				enemies[i]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, obj->getEnemyType(i), this, i);
+				enemies[i]->setPosition(posEnemy);
+				enemies[i]->setTileMap(map);
+			}
+		}
 		if (enemies[i] != NULL) enemies[i]->update(deltaTime);
 	}
 	checkEnemyCollisions();
@@ -130,15 +147,17 @@ void Scene::render()
 	texProgram.setUniformMatrix4f("projection", projection);
 	texProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
 	modelview = glm::mat4(1.0f);
+	//modelview = glm::rotate(modelview, 0.1f, glm::vec3(0, 0, 1));
 	texProgram.setUniformMatrix4f("modelview", modelview);
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
+
 	map->render();
 	map->renderWater();
 	map->renderBridges();
 	if (boss != NULL) boss->render();
 	map->renderWater();
 	if (player != NULL) player->render();
-	for (int i = 0; i < MAX_ENEMIES; ++i) {
+	for (int i = 0; i < maxEnemies; ++i) {
 		if (enemies[i] != NULL) enemies[i]->render();
 	}
 
@@ -187,7 +206,7 @@ void Scene::checkEnemyCollisions() {
 		bulletPos = getBulletPos(i, exists);
 		if (exists) {
 			if (bullets[i]->getFriendly()) {
-				for (int j = 0; j < MAX_ENEMIES; ++j) {
+				for (int j = 0; j < maxEnemies; ++j) {
 					if (enemies[j] != NULL && !enemies[j]->getDying()) {
 						enemyPos = enemies[j]->getEnemyPos();
 						hit = collides(bulletPos, BULLET_WIDTH, BULLET_HEIGHT,
@@ -247,7 +266,7 @@ void Scene::checkPlayerCollisions() {
 		}
 	}
 
-	for (int i = 0; i < MAX_ENEMIES; ++i) {
+	for (int i = 0; i < maxEnemies; ++i) {
 		if (enemies[i] != NULL) {
 			glm::ivec2 enemyPos = enemies[i]->getEnemyPos();
 			hit = collides(enemyPos, ENEMY_WIDTH, ENEMY_HEIGHT,
@@ -344,15 +363,17 @@ void Scene::bossDeath() {
 	boss = NULL;
 }
 
-void Scene::playerRespawn() {
+void Scene::playerRespawn() { //changed
+	glm::vec2 posPlayer = player->getPosPlayer();
+	posPlayer.y = 0;
 	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
-	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
+	player->setPosition(posPlayer);
 
 }
 
 void Scene::spawnEnemy(glm::ivec2 posSpawn, int type) {
 	bool stop = false;
-	for (int i = 0; i < MAX_ENEMIES && !stop; ++i) {
+	for (int i = 0; i < maxEnemies && !stop; ++i) {
 		if (enemies[i] == NULL) {
 			enemies[i] = new Enemy();
 			enemies[i]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, type, this, i);

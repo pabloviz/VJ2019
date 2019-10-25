@@ -34,3 +34,7 @@ void Camera::setCameraPos(glm::ivec2 newpos) {
 glm::ivec2 Camera::getCameraPos() {
 	return posCamera;
 }
+
+void Camera::rotateCamera(float angle) {
+	this->angle += angle;
+}

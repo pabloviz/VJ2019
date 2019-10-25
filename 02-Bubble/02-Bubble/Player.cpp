@@ -8,7 +8,7 @@
 
 
 #define JUMP_ANGLE_STEP 4
-#define JUMP_HEIGHT 96
+#define JUMP_HEIGHT 70
 #define FALL_STEP 4
 #define MAX_BULLETS 4
 
@@ -135,7 +135,7 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Sc
 	
 }
 
-void Player::update(int deltaTime)
+void Player::update(int deltaTime) //changed
 {
 	sprite->update(deltaTime);
 	if (!invulnerable) inv_frames = 0;
@@ -174,14 +174,14 @@ void Player::update(int deltaTime)
 	if (bJumping)
 	{
 		jumpAngle += JUMP_ANGLE_STEP;
-		if (jumpAngle == 180)
+		if (jumpAngle >= 180)
 		{
 			bJumping = false;
 			posPlayer.y = startY;
 		}
 		else
 		{
-			posPlayer.y = startY - 96 * sin(3.14159f * jumpAngle / 180.f) - 1;
+			posPlayer.y = startY - JUMP_HEIGHT * sin(3.14159f * jumpAngle / 180.f);
 			if (jumpAngle > 90)
 				bJumping = !map->collisionMoveDown(posPlayer, glm::ivec2(32, 48), &posPlayer.y);
 		}
@@ -233,7 +233,9 @@ void Player::update(int deltaTime)
 			sprite->changeAnimation(MOVE_LEFT_DOWN);
 
 		//CHECK COLLISION
-		if (!crouch) {
+		glm::vec2 posAux = posPlayer;
+		posAux.y += 32;
+		if (!crouch && !(water && map->collisionMoveLeft(posAux, glm::ivec2(32, 16)))) {
 			posPlayer.x -= 0.75;
 			
 		}
@@ -257,7 +259,9 @@ void Player::update(int deltaTime)
 			sprite->changeAnimation(MOVE_RIGHT_DOWN);
 
 		//CHECK COLLISION
-		if (!crouch) {
+		glm::ivec2 posAux = posPlayer;
+		posAux.y += 32;
+		if (!crouch && !(water && map->collisionMoveRight(posAux, glm::ivec2(32, 16)))) {
 			posPlayer.x += 0.75;
 			
 		}
@@ -295,7 +299,8 @@ void Player::update(int deltaTime)
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
 }
 
-void Player::update_death() {
+void Player::update_death() { //changed
+
 	if (sprite->animation() != DIE_LEFT) {
 		sprite->changeAnimation(DIE_LEFT);
 		bJumping = true;

@@ -33,7 +33,6 @@ public:
 	int animation() const;
 	
 	void setPosition(const glm::vec2 &pos);
-	void incrementAngle(float incr);
 
 private:
 	Texture *texture;
@@ -46,7 +45,6 @@ private:
 	float timeAnimation;
 	glm::vec2 texCoordDispl;
 	vector<AnimKeyframes> animations;
-	float angle;
 };
 
 

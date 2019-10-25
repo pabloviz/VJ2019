@@ -11,8 +11,10 @@ public:
 	glm::ivec2 getCameraPos();
 
 private:
+	void rotateCamera(float angle);
 
 	glm::ivec2 posCamera;
+	float angle = 0.f;
 	//float CameraXspeed, CameraYSpeed;
 
 };

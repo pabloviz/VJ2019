@@ -5,8 +5,8 @@
 #include "Bullet.h"
 #include "Game.h"
 
-#define HORIZ_VEL 1
-#define VERT_VEL 1
+#define HORIZ_VEL 2
+#define VERT_VEL 2
 #define JUMP_ANGLE_STEP 4
 #define JUMP_HEIGHT 96
 #define FALL_STEP 4
