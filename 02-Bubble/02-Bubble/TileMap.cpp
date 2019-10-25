@@ -241,12 +241,12 @@ void TileMap::renderBridges() {
 // Method collisionMoveDown also corrects Y coordinate if the box is
 // already intersecting a tile below.
 
-bool TileMap::collisionMoveLeft(const glm::vec2 &pos, const glm::ivec2 &size) const
+bool TileMap::collisionMoveLeft(const glm::vec2 &pos, const glm::ivec2 &size) const //changed
 {
 	int x, y0, y1;
 
 	x = pos.x / tileSize;
-	y0 = (pos.y + 48 - size.y) / tileSize;
+	y0 = (pos.y - size.y) / tileSize;
 	y1 = (pos.y + size.y - 1) / tileSize;
 	//y1 /= 2.0;
 	for (int y = y0; y <= y1; y++)
@@ -259,12 +259,12 @@ bool TileMap::collisionMoveLeft(const glm::vec2 &pos, const glm::ivec2 &size) co
 	return false;
 }
 
-bool TileMap::collisionMoveRight(const glm::vec2 &pos, const glm::ivec2 &size) const
+bool TileMap::collisionMoveRight(const glm::vec2 &pos, const glm::ivec2 &size) const //changed
 {
 	int x, y0, y1;
 
 	x = (pos.x + size.x - 1) / tileSize;
-	y0 = (pos.y + 48 - size.y) / tileSize;
+	y0 = (pos.y - size.y) / tileSize;
 	y1 = (pos.y + size.y - 1) / tileSize;
 	//y1 /= 2.0;
 	for (int y = y0; y <= y1; y++)
@@ -277,7 +277,7 @@ bool TileMap::collisionMoveRight(const glm::vec2 &pos, const glm::ivec2 &size) c
 	return false;
 }
 
-bool TileMap::collisionMoveDown(const glm::vec2 &pos, const glm::ivec2 &size, float *posY) const
+bool TileMap::collisionMoveDown(const glm::vec2 &pos, const glm::ivec2 &size, float *posY) const //changed
 {
 	int x0, x1, y;
 
@@ -287,7 +287,7 @@ bool TileMap::collisionMoveDown(const glm::vec2 &pos, const glm::ivec2 &size, fl
 	for (int x = x0; x <= x1; x++)
 	{
 		int col = map[y * mapSize.x + x];
-		if (col < 2 || col == 97 || col == 98 || col == 94 || col == 14) {
+		if (col < 2 || col == 97 || col == 98 || col == 94 || y == 13) { // y==13 map edge
 			{
 				if (*posY - tileSize * y + size.y <= 4)
 				{
@@ -318,29 +318,3 @@ bool TileMap::detectWater(glm::vec2 &pos, const glm::ivec2 &size) const
 
 	return false;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

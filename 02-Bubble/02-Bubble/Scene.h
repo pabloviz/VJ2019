@@ -12,7 +12,7 @@
 #include "Powerup.h"
 #include "Boss.h"
 #include "Camera.h"
-
+#include "ObjectMap.h"
 
 // Scene contains all the entities of our game.
 // It is responsible for updating and render them.
@@ -52,9 +52,11 @@ private:
 
 private:
 	TileMap *map;
+	ObjectMap *obj;
 	Player *player;
 	Boss *boss;
 	vector<Enemy*> enemies;
+	vector<bool> spawnedEnemies;
 	vector<Bullet*> bullets;
 	Powerup *powerup;
 	ShaderProgram texProgram;
@@ -62,6 +64,7 @@ private:
 	glm::mat4 projection;
 	int ticks;
 	Camera *camera;
+	int maxEnemies;
 };
 
 

@@ -153,14 +153,14 @@ void PlayerTV::update(int deltaTime)
 	//LEFT IS PUSHED
 	if (Game::instance().getSpecialKey(GLUT_KEY_LEFT))
 	{
-		sprite->incrementAngle(+0.1f);
+		//sprite->incrementAngle(+0.1f);
 		angle += 0.1f;
 	}
 
 	//RIGHT IS PUSHED
 	else if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
 	{
-		sprite->incrementAngle(-0.1f);
+		//sprite->incrementAngle(-0.1f);
 		angle -= 0.1f;
 	}
 	
