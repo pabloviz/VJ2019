@@ -16,7 +16,7 @@
 void Camera::update(int deltaTime, glm::ivec2 posplayer) {
 	posplayer.x += TMP_PLAYER_WIDTH;
 	int diff = posplayer.x - posCamera.x;
-	if (diff > CAMERA_WIDTH/2) {
+	if (diff > CAMERA_WIDTH/2 && (216*16-posCamera.x)>=CAMERA_WIDTH) {
 		posCamera.x = posplayer.x - CAMERA_WIDTH/2;
 	}
 }
