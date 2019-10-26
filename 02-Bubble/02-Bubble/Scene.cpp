@@ -8,8 +8,8 @@
 #define SCREEN_X 32
 #define SCREEN_Y 16
 
-#define INIT_PLAYER_X_TILES 4
-#define INIT_PLAYER_Y_TILES 2
+#define INIT_PLAYER_X_TILES 0
+#define INIT_PLAYER_Y_TILES 0
 
 #define MAX_BULLETS 40
 
@@ -60,9 +60,10 @@ void Scene::init() //changed
 {
 	initShaders();
 	ticks = 0;
-
+	posPlayer.x = 0;
+	posPlayer.y = 0;
 	
-	map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
+	map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram, this);
 	map->iniWater(texProgram, glm::ivec2(SCREEN_X, SCREEN_Y));
 	obj = new ObjectMap("levels/obj01.txt");
 	maxEnemies = obj->getSize();
@@ -73,8 +74,8 @@ void Scene::init() //changed
 		spawnedEnemies.push_back(false);
 	}
 
-	player = new Player();
-	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
+	player = new PlayerTV();
+	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this, -(3.14f / 2.f));
 	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
 	player->setTileMap(map);
 	player->setLives(PLAYER_LIVES);
@@ -85,7 +86,7 @@ void Scene::init() //changed
 	//boss->setTileMap(map);
 
 	powerup = new Powerup();
-	powerup->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram);
+	powerup->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
 	powerup->setPosition(glm::vec2(15 * map->getTileSize(), 10 * map->getTileSize()));
 	powerup->setTileMap(map);
 
@@ -97,13 +98,27 @@ void Scene::init() //changed
 	projection = camera->calcProj();
 	//projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1 + 100), float(SCREEN_HEIGHT - 1), 0.f);
 	currentTime = 0.0f;
+	TV = true;
 }
 
 void Scene::update(int deltaTime)
 {
 	++ticks;
 	currentTime += deltaTime;
-	if (player != NULL)player->update(deltaTime);
+	if (TV) {
+		if (Game::instance().getKey('a')) {
+			angle -= 0.1f;
+			render();
+		}
+		else if (Game::instance().getKey('s')) {
+			angle += 0.1f;
+			render();
+		}
+	}
+	if (player != NULL) {
+		player->update(deltaTime);
+		posPlayer = player->getPosPlayer();
+	}
 	if (powerup != NULL) powerup->update(deltaTime);
 	if (boss != NULL) boss->update(deltaTime);
 	if (ticks % 2 == 0)
@@ -147,24 +162,26 @@ void Scene::render()
 	texProgram.setUniformMatrix4f("projection", projection);
 	texProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
 	modelview = glm::mat4(1.0f);
-	//modelview = glm::rotate(modelview, 0.1f, glm::vec3(0, 0, 1));
+	modelview = glm::translate(modelview, glm::vec3(posPlayer.x + 48, posPlayer.y + 32, 0.f));
+	modelview = glm::rotate(modelview, angle, glm::vec3(0, 0, 1));
+	modelview = glm::translate(modelview, glm::vec3(-(posPlayer.x + 48), -(posPlayer.y + 32), 0.f));
 	texProgram.setUniformMatrix4f("modelview", modelview);
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
-
-	map->render();
-	map->renderWater();
-	map->renderBridges();
-	if (boss != NULL) boss->render();
-	map->renderWater();
-	if (player != NULL) player->render();
+	
+	map->render(posPlayer, angle);
+	map->renderWater(posPlayer, angle);
+	map->renderBridges(posPlayer, angle);
+	if (boss != NULL) boss->render(posPlayer, angle);
+	map->renderWater(posPlayer, angle);
+	if (player != NULL) player->render(posPlayer, angle);
 	for (int i = 0; i < maxEnemies; ++i) {
-		if (enemies[i] != NULL) enemies[i]->render();
+		if (enemies[i] != NULL) enemies[i]->render(posPlayer, angle);
 	}
 
 	for (int i = 0; i < MAX_BULLETS; ++i) {
-		if (bullets[i] != NULL) bullets[i]->render();
+		if (bullets[i] != NULL) bullets[i]->render(posPlayer, angle);
 	}
-	if (powerup != NULL) powerup->render();
+	if (powerup != NULL) powerup->render(posPlayer, angle);
 }
 
 void Scene::initShaders()
@@ -313,7 +330,7 @@ void Scene::addBullet (float angle, glm::vec2 posBullet, bool friendly) {
 	for (int i = 0; i < MAX_BULLETS && stop != 0; ++i) {
 		if (bullets[i] == NULL) {
 			bullets[i] = new Bullet();
-			bullets[i]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, angle, posBullet, friendly);
+			bullets[i]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, angle, posBullet, friendly, this);
 			angle += 0.436;
 			--stop;
 
@@ -342,10 +359,8 @@ void Scene::despawnPowerup() {
 }
 
 glm::ivec2 Scene::getPosPlayer() {
-	glm::ivec2 aux;
-	aux.x = -1; // if this equals -1 afterwards, it means player was NULL
-	if (player != NULL) aux = player->getPosPlayer();
-	return aux;
+	if (player != NULL) posPlayer = player->getPosPlayer();
+	return posPlayer;
 }
 
 void Scene::playerDeath() {
@@ -365,8 +380,8 @@ void Scene::bossDeath() {
 
 void Scene::playerRespawn() { //changed
 	glm::vec2 posPlayer = player->getPosPlayer();
-	posPlayer.y = 0;
-	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
+	if (!TV) posPlayer.y = 0;
+	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this, player->getAngle());
 	player->setPosition(posPlayer);
 
 }
@@ -382,4 +397,8 @@ void Scene::spawnEnemy(glm::ivec2 posSpawn, int type) {
 			stop = true;
 		}
 	}
+}
+
+float Scene::getAngle() {
+	return angle;
 }

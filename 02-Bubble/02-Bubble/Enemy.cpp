@@ -43,7 +43,7 @@ void Enemy::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, int
 	for (int i = 0; i < MAX_BULLETS; ++i) bullets.push_back(NULL);
 
 	spritesheet.loadFromFile("images/enemies_sprites.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	sprite = Sprite::createSprite(glm::ivec2(32, 48), glm::vec2(TILESHEET_H, TILESHEET_V), &spritesheet, &shaderProgram);
+	sprite = Sprite::createSprite(glm::ivec2(32, 48), glm::vec2(TILESHEET_H, TILESHEET_V), &spritesheet, &shaderProgram, scene);
 	sprite->setNumberAnimations(8);
 
 	sprite->setAnimationSpeed(MOVE_LEFT, 8);
@@ -192,9 +192,9 @@ void Enemy::updateDeath() {
 
 }
 
-void Enemy::render()
+void Enemy::render(glm::vec2 posPlayer, float angle)
 {
-	sprite->render();
+	sprite->render(posPlayer, angle);
 }
 
 void Enemy::setTileMap(TileMap *tileMap)

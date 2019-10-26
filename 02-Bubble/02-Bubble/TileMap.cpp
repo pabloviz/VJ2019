@@ -8,16 +8,17 @@
 using namespace std;
 
 
-TileMap *TileMap::createTileMap(const string &levelFile, const glm::vec2 &minCoords, ShaderProgram &program)
+TileMap *TileMap::createTileMap(const string &levelFile, const glm::vec2 &minCoords, ShaderProgram &program, Scene *scene)
 {
-	TileMap *map = new TileMap(levelFile, minCoords, program);
+	TileMap *map = new TileMap(levelFile, minCoords, program, scene);
 
 	return map;
 }
 
 
-TileMap::TileMap(const string &levelFile, const glm::vec2 &minCoords, ShaderProgram &program)
+TileMap::TileMap(const string &levelFile, const glm::vec2 &minCoords, ShaderProgram &program, Scene *scene)
 {
+	this->scene = scene;
 	loadLevel(levelFile);
 	prepareArrays(minCoords, program);
 }
@@ -29,7 +30,7 @@ TileMap::~TileMap()
 }
 
 
-void TileMap::render() const
+void TileMap::render(glm::vec2 posPlayer, float angle) const
 {
 	glEnable(GL_TEXTURE_2D);
 	tilesheet.use();
@@ -122,7 +123,7 @@ void TileMap::prepareArrays(const glm::vec2 &minCoords, ShaderProgram &program)
 				int delay = 40;
 				for (int b = 0; b < 8; ++b) {
 					Bridge* br = new Bridge();
-					br->init(program, tile + (b % 2) + 1, tilesheetSize.x, tilesheetSize.y, delay, b);
+					br->init(program, tile + (b % 2) + 1, tilesheetSize.x, tilesheetSize.y, delay, b, scene);
 					br->setPos(glm::vec2(minCoords.x + (i + b) * 16, minCoords.y + j * 16));
 					br->setMapPos(j * mapSize.x + i + b);
 					map[j * mapSize.x + i + b] = 94; //just for colisions
@@ -181,7 +182,7 @@ void TileMap::iniWater(ShaderProgram& shaderProgram, const glm::ivec2& tileMapPo
 		{
 			int tile = map[j * mapSize.x + i];
 			if (tile >= 4 && tile <= 13) {
-				Sprite * sprite = Sprite::createSprite(glm::ivec2(16, 16), glm::vec2(0.0625f, 0.0625f), &tilesheet, &shaderProgram);
+				Sprite * sprite = Sprite::createSprite(glm::ivec2(16, 16), glm::vec2(0.0625f, 0.0625f), &tilesheet, &shaderProgram, scene);
 				sprite->setNumberAnimations(1);
 				sprite->setAnimationSpeed(0, 2);
 				sprite->addKeyframe(0, glm::vec2(float((tile) % 16) / tilesheetSize.x, float((tile) / 16) / tilesheetSize.y));
@@ -200,9 +201,9 @@ void TileMap::updateWater(int deltaTime) {
 	}
 }
 
-void TileMap::renderWater() {
+void TileMap::renderWater(glm::vec2 posPlayer, float angle) {
 	for (int i = 0; i < water.size(); ++i) {
-		water[i]->render();
+		water[i]->render(posPlayer, angle);
 	}
 }
 
@@ -229,10 +230,10 @@ void TileMap::updateBridges(int deltaTime, glm::ivec2 posplayer) {
 	}
 }
 
-void TileMap::renderBridges() {
+void TileMap::renderBridges(glm::vec2 posPlayer, float angle) {
 	for (int i = 0; i < bridges.size(); ++i) {
 		for (int j = bridges[i].size() - 1; j >= 0; --j) {
-			if (j != 0 || !bridges[i][j]->getDestroy()) bridges[i][j]->renderBridge();
+			if (j != 0 || !bridges[i][j]->getDestroy()) bridges[i][j]->renderBridge(posPlayer, angle);
 		}
 	}
 }

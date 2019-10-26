@@ -10,10 +10,10 @@
 #define JUMP_HEIGHT 96
 #define FALL_STEP 4
 
-void Powerup::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
+void Powerup::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Scene *scene)
 {
 	spritesheet.loadFromFile("images/powerup.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	sprite = Sprite::createSprite(glm::ivec2(32, 16), glm::vec2(1, 0.5f), &spritesheet, &shaderProgram);
+	sprite = Sprite::createSprite(glm::ivec2(32, 16), glm::vec2(1, 0.5f), &spritesheet, &shaderProgram, scene);
 	sprite->setNumberAnimations(1);
 
 	sprite->setAnimationSpeed(0, 8);
@@ -35,9 +35,9 @@ void Powerup::update(int deltaTime)
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPowerup.x), float(tileMapDispl.y + posPowerup.y)));
 }
 
-void Powerup::render()
+void Powerup::render(glm::vec2 posPlayer, float angle)
 {
-	sprite->render();
+	sprite->render(posPlayer, angle);
 }
 
 void Powerup::setTileMap(TileMap *tileMap)

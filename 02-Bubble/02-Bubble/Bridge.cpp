@@ -10,13 +10,14 @@ Bridge::Bridge()
 	posBridge = glm::vec2(0, 0);
 }
 
-void Bridge::init(ShaderProgram& shaderProgram, int tile, int sizex, int sizey, int new_delay, int pos) {
+void Bridge::init(ShaderProgram& shaderProgram, int tile, int sizex, int sizey, int new_delay, int pos, Scene *scene) {
 	program = shaderProgram;
 	maxdelay = new_delay;
 	delay = new_delay;
+	scene = scene;
 	tilesheet.loadFromFile("images/tilesheet.png", TEXTURE_PIXEL_FORMAT_RGBA);
 
-	sprite = Sprite::createSprite(glm::ivec2(16, 16), glm::vec2(0.0625f, 0.0625f), &tilesheet, &program);
+	sprite = Sprite::createSprite(glm::ivec2(16, 16), glm::vec2(0.0625f, 0.0625f), &tilesheet, &program, scene);
 	sprite->setNumberAnimations(3);
 	sprite->setAnimationSpeed(0, 8);
 	sprite->addKeyframe(0, glm::vec2(float((tile) % 16) / sizex, float((tile) / 16) / sizey));
@@ -32,7 +33,7 @@ void Bridge::init(ShaderProgram& shaderProgram, int tile, int sizex, int sizey, 
 
 	sprite->changeAnimation(0);
 	//////////
-	lower = Sprite::createSprite(glm::ivec2(16, 16), glm::vec2(0.0625f, 0.0625f), &tilesheet, &program);
+	lower = Sprite::createSprite(glm::ivec2(16, 16), glm::vec2(0.0625f, 0.0625f), &tilesheet, &program, scene);
 	lower->setNumberAnimations(2);
 	lower->setAnimationSpeed(0, 1);
 	if(pos==0) lower->addKeyframe(0, glm::vec2(float(113 % 16) / sizex, float(113 / 16) / sizey));
@@ -46,12 +47,12 @@ void Bridge::init(ShaderProgram& shaderProgram, int tile, int sizex, int sizey, 
 void Bridge::setDestroy(int type) {
 	if (delay == 40) {
 		Explosion* e = new Explosion();
-		e->init(program);
+		e->init(program, scene);
 		e->setPos(glm::vec2(posBridge.x,posBridge.y - type*8));
 		exp.push_back(e);
 
 		e = new Explosion();
-		e->init(program);
+		e->init(program, scene);
 		e->setPos(glm::vec2(posBridge.x, posBridge.y +10));
 		exp.push_back(e);
 	}
@@ -90,13 +91,13 @@ void Bridge::updateBridge(int deltaTime) {
 	sprite->update(deltaTime);
 	lower->update(deltaTime);
 }
-void Bridge::renderBridge() {
+void Bridge::renderBridge(glm::vec2 posPlayer, float angle) {
 
 	if (delay >= 0) {
-		sprite->render();
-		lower->render();
+		sprite->render(posPlayer, angle);
+		lower->render(posPlayer, angle);
 		for (int i = 0; i < exp.size() && destroy; ++i)
-			exp[i]->renderExplosion();
+			exp[i]->renderExplosion(posPlayer, angle);
 	}
 }
 void Bridge::setMapPos(int pos) {

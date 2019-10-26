@@ -10,9 +10,9 @@ class Powerup
 {
 
 public:
-	void init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram);
+	void init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Scene *scene);
 	void update(int deltaTime);
-	void render();
+	void render(glm::vec2 posPlayer, float angle);
 	void setTileMap(TileMap *tilemap);
 	void setPosition(const glm::vec2 &pos);
 

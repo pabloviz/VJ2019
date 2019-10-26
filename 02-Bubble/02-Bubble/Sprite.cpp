@@ -4,16 +4,17 @@
 #include "Sprite.h"
 
 
-Sprite *Sprite::createSprite(const glm::vec2 &quadSize, const glm::vec2 &sizeInSpritesheet, Texture *spritesheet, ShaderProgram *program)
+Sprite *Sprite::createSprite(const glm::vec2 &quadSize, const glm::vec2 &sizeInSpritesheet, Texture *spritesheet, ShaderProgram *program, Scene *scene)
 {
-	Sprite *quad = new Sprite(quadSize, sizeInSpritesheet, spritesheet, program);
+	Sprite *quad = new Sprite(quadSize, sizeInSpritesheet, spritesheet, program, scene);
 
 	return quad;
 }
 
 
-Sprite::Sprite(const glm::vec2 &quadSize, const glm::vec2 &sizeInSpritesheet, Texture *spritesheet, ShaderProgram *program)
+Sprite::Sprite(const glm::vec2 &quadSize, const glm::vec2 &sizeInSpritesheet, Texture *spritesheet, ShaderProgram *program, Scene *scene)
 {
+	this->scene = scene;
 	float vertices[24] = {0.f, 0.f, 0.f, 0.f, 
 												quadSize.x, 0.f, sizeInSpritesheet.x, 0.f, 
 												quadSize.x, quadSize.y, sizeInSpritesheet.x, sizeInSpritesheet.y, 
@@ -48,11 +49,13 @@ void Sprite::update(int deltaTime)
 	}
 }
 
-void Sprite::render() const
+void Sprite::render(glm::vec2 posPlayer, float angle) 
 {
 	glm::mat4 modelview = glm::mat4(1.0f);
-	//glm::mat4 modelview = glm::rotate(glm::mat4(1.0f), ,glm::vec3(0, 0, 1));
-	//modelview = glm::translate(modelview, );
+	
+	modelview = glm::translate(modelview, glm::vec3(posPlayer.x + 48, posPlayer.y + 32, 0.f));
+	modelview = glm::rotate(modelview, angle ,glm::vec3(0, 0, 1));
+	modelview = glm::translate(modelview, glm::vec3(-(posPlayer.x + 48), -(posPlayer.y + 32), 0.f));
 	modelview = glm::translate(modelview, glm::vec3(position.x, position.y, 0.f));
 	shaderProgram->setUniformMatrix4f("modelview", modelview);
 	shaderProgram->setUniform2f("texCoordDispl", texCoordDispl.x, texCoordDispl.y);

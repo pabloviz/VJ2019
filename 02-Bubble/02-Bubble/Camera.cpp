@@ -10,18 +10,23 @@
 #define CAMERA_WIDTH 14*16
 #define CAMERA_HEIGHT 14*16
 
-#define TMP_PLAYER_WIDTH 50
-#define TMP_PLAYER_HEIGHT 50
+#define TMP_PLAYER_WIDTH 32
+#define TMP_PLAYER_HEIGHT 48
 
 void Camera::update(int deltaTime, glm::ivec2 posplayer) {
 	posplayer.x += TMP_PLAYER_WIDTH;
 	int diff = posplayer.x - posCamera.x;
-	if (diff > CAMERA_WIDTH/2) {
-		posCamera.x = posplayer.x - CAMERA_WIDTH/2;
+	if (diff > CAMERA_WIDTH / 2) {
+		posCamera.x = posplayer.x - CAMERA_WIDTH / 2;
+	}
+	if (TV) {
+		posCamera.x = posplayer.x + TMP_PLAYER_WIDTH - CAMERA_WIDTH / 2;
+		posCamera.y = posplayer.y + TMP_PLAYER_HEIGHT - CAMERA_WIDTH / 2;
 	}
 }
 
 glm::mat4 Camera::calcProj() {
+	//if (TV) return glm::ortho((float)posCamera.x - CAMERA_WIDTH/2, (float)(posCamera.x + CAMERA_WIDTH/2), (float)(posCamera.y + CAMERA_WIDTH/2), (float)posCamera.y - CAMERA_WIDTH/2);
 	return glm::ortho((float)posCamera.x, (float)(posCamera.x + CAMERA_WIDTH), (float)(posCamera.y+ CAMERA_WIDTH), (float)posCamera.y);
 }
 

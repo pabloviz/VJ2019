@@ -35,6 +35,7 @@ public:
 	void enemyDeath(int id);
 	void bossDeath();
 	void spawnEnemy(glm::ivec2 posSpawn, int type);
+	float getAngle();
 
 private:
 	void initShaders();
@@ -53,7 +54,7 @@ private:
 private:
 	TileMap *map;
 	ObjectMap *obj;
-	Player *player;
+	PlayerTV *player;
 	Boss *boss;
 	vector<Enemy*> enemies;
 	vector<bool> spawnedEnemies;
@@ -65,6 +66,9 @@ private:
 	int ticks;
 	Camera *camera;
 	int maxEnemies;
+	float angle;
+	glm::vec2 posPlayer;
+	bool TV;
 };
 
 

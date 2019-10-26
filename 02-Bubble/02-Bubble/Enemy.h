@@ -11,7 +11,6 @@
 // Player is basically a Sprite that represents the player. As such it has
 // all properties it needs to track its movement, jumping, and collisions.
 
-class Scene;
 
 class Enemy
 {
@@ -19,7 +18,7 @@ class Enemy
 public:
 	void init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, int type, Scene *scene, int id);
 	void update(int deltaTime);
-	void render();
+	void render(glm::vec2 posPlayer, float angle);
 
 	void setTileMap(TileMap *tileMap);
 	void setPosition(const glm::vec2 &pos);

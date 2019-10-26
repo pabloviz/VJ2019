@@ -7,23 +7,22 @@
 #include "Texture.h"
 #include "ShaderProgram.h"
 #include "AnimKeyframes.h"
-
-
 // This class is derived from code seen earlier in TexturedQuad but it is also
 // able to manage animations stored as a spritesheet. 
 
+class Scene;
 
 class Sprite
 {
 
 public:
 	// Textured quads can only be created inside an OpenGL context
-	static Sprite *createSprite(const glm::vec2 &quadSize, const glm::vec2 &sizeInSpritesheet, Texture *spritesheet, ShaderProgram *program);
+	static Sprite *createSprite(const glm::vec2 &quadSize, const glm::vec2 &sizeInSpritesheet, Texture *spritesheet, ShaderProgram *program, Scene *scene);
 
-	Sprite(const glm::vec2 &quadSize, const glm::vec2 &sizeInSpritesheet, Texture *spritesheet, ShaderProgram *program);
+	Sprite(const glm::vec2 &quadSize, const glm::vec2 &sizeInSpritesheet, Texture *spritesheet, ShaderProgram *program, Scene *scene);
 
 	void update(int deltaTime);
-	void render() const;
+	void render(glm::vec2 posPlayer, float angle);
 	void free();
 
 	void setNumberAnimations(int nAnimations);
@@ -45,6 +44,7 @@ private:
 	float timeAnimation;
 	glm::vec2 texCoordDispl;
 	vector<AnimKeyframes> animations;
+	Scene *scene;
 };
 
 

@@ -10,19 +10,17 @@
 #define FALL_STEP 4
 #define MAX_BULLETS 4
 
-#define TILESHEET_H 0.0625
-#define TILESHEET_V 0.09375
+#define TILESHEET_H 0.5
+#define TILESHEET_V 0.5
 
 
 enum PlayerAnims
 {
-	STAND_LEFT, STAND_RIGHT, STAND_RIGHT_UP, STAND_LEFT_UP, MOVE_LEFT, MOVE_RIGHT, MOVE_LEFT_UP, MOVE_RIGHT_UP,
-	MOVE_LEFT_DOWN, MOVE_RIGHT_DOWN, JUMP_LEFT, JUMP_RIGHT, DIE_LEFT, DIE_RIGHT,
-	SWIM_LEFT, SWIM_RIGHT, CROUCH_LEFT, CROUCH_RIGHT
+	STAND, WALK, DEATH
 };
 
 
-void PlayerTV::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Scene *scene)
+void PlayerTV::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Scene *scene, float angle)
 {
 	bJumping = false;
 	x_pressed = false;
@@ -30,102 +28,25 @@ void PlayerTV::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, 
 	this->scene = scene;
 	this->dying = false;
 	this->invulnerable = true;
-	this->angle = 0.f;
+	this->angle = angle;
 	spread = false;
 
-	spritesheet.loadFromFile("images/contraspritesheet.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	sprite = Sprite::createSprite(glm::ivec2(32, 48), glm::vec2(TILESHEET_H, TILESHEET_V), &spritesheet, &shaderProgram);
-	sprite->setNumberAnimations(18);
+	spritesheet.loadFromFile("images/playerTV.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	sprite = Sprite::createSprite(glm::ivec2(32, 32), glm::vec2(TILESHEET_H, TILESHEET_V), &spritesheet, &shaderProgram, scene);
+	sprite->setNumberAnimations(3);
 
-	sprite->setAnimationSpeed(STAND_LEFT, 8);
-	sprite->addKeyframe(STAND_LEFT, glm::vec2(0.f, 0.f));
+	sprite->setAnimationSpeed(STAND, 8);
+	sprite->addKeyframe(STAND, glm::vec2(TILESHEET_H, 0.f));
 
-	sprite->setAnimationSpeed(STAND_RIGHT, 8);
-	sprite->addKeyframe(STAND_RIGHT, glm::vec2(2 * TILESHEET_H, 0.f));
+	sprite->setAnimationSpeed(WALK, 8);
+	sprite->addKeyframe(WALK, glm::vec2(0.f, 0.f));
+	sprite->addKeyframe(WALK, glm::vec2(TILESHEET_H, 0.f));
+	sprite->addKeyframe(WALK, glm::vec2(0.f, TILESHEET_V));
+	sprite->addKeyframe(WALK, glm::vec2(TILESHEET_H, 0.f));
 
-	sprite->setAnimationSpeed(STAND_LEFT_UP, 8);
-	sprite->addKeyframe(STAND_LEFT_UP, glm::vec2(4 * TILESHEET_H, 0.f));
 
-	sprite->setAnimationSpeed(STAND_RIGHT_UP, 8);
-	sprite->addKeyframe(STAND_RIGHT_UP, glm::vec2(6 * TILESHEET_H, 0.f));
-
-	sprite->setAnimationSpeed(MOVE_LEFT, 8);
-	sprite->addKeyframe(MOVE_LEFT, glm::vec2(0.f, 3 * TILESHEET_V));
-	sprite->addKeyframe(MOVE_LEFT, glm::vec2(7 * TILESHEET_H, 2 * TILESHEET_V));
-	sprite->addKeyframe(MOVE_LEFT, glm::vec2(6 * TILESHEET_H, 2 * TILESHEET_V));
-	sprite->addKeyframe(MOVE_LEFT, glm::vec2(5 * TILESHEET_H, 2 * TILESHEET_V));
-	sprite->addKeyframe(MOVE_LEFT, glm::vec2(4 * TILESHEET_H, 2 * TILESHEET_V));
-	sprite->addKeyframe(MOVE_LEFT, glm::vec2(5 * TILESHEET_H, 2 * TILESHEET_V));
-	sprite->addKeyframe(MOVE_LEFT, glm::vec2(6 * TILESHEET_H, 2 * TILESHEET_V));
-	sprite->addKeyframe(MOVE_LEFT, glm::vec2(7 * TILESHEET_H, 2 * TILESHEET_V));
-
-	sprite->setAnimationSpeed(MOVE_RIGHT, 8);
-	sprite->addKeyframe(MOVE_RIGHT, glm::vec2(TILESHEET_H, 3 * TILESHEET_V));
-	sprite->addKeyframe(MOVE_RIGHT, glm::vec2(2 * TILESHEET_H, 3 * TILESHEET_V));
-	sprite->addKeyframe(MOVE_RIGHT, glm::vec2(3 * TILESHEET_H, 3 * TILESHEET_V));
-	sprite->addKeyframe(MOVE_RIGHT, glm::vec2(4 * TILESHEET_H, 3 * TILESHEET_V));
-	sprite->addKeyframe(MOVE_RIGHT, glm::vec2(5 * TILESHEET_H, 3 * TILESHEET_V));
-	sprite->addKeyframe(MOVE_RIGHT, glm::vec2(4 * TILESHEET_H, 3 * TILESHEET_V));
-	sprite->addKeyframe(MOVE_RIGHT, glm::vec2(3 * TILESHEET_H, 3 * TILESHEET_V));
-	sprite->addKeyframe(MOVE_RIGHT, glm::vec2(2 * TILESHEET_H, 3 * TILESHEET_V));
-
-	sprite->setAnimationSpeed(MOVE_RIGHT_UP, 8);
-	sprite->addKeyframe(MOVE_RIGHT_UP, glm::vec2(3 * TILESHEET_H, TILESHEET_V));
-	sprite->addKeyframe(MOVE_RIGHT_UP, glm::vec2(4 * TILESHEET_H, TILESHEET_V));
-	sprite->addKeyframe(MOVE_RIGHT_UP, glm::vec2(5 * TILESHEET_H, TILESHEET_V));
-
-	sprite->setAnimationSpeed(MOVE_RIGHT_DOWN, 8);
-	sprite->addKeyframe(MOVE_RIGHT_DOWN, glm::vec2(TILESHEET_H, 2 * TILESHEET_V));
-	sprite->addKeyframe(MOVE_RIGHT_DOWN, glm::vec2(2 * TILESHEET_H, 2 * TILESHEET_V));
-	sprite->addKeyframe(MOVE_RIGHT_DOWN, glm::vec2(3 * TILESHEET_H, 2 * TILESHEET_V));
-
-	sprite->setAnimationSpeed(MOVE_LEFT_UP, 8);
-	sprite->addKeyframe(MOVE_LEFT_UP, glm::vec2(0.f, TILESHEET_V));
-	sprite->addKeyframe(MOVE_LEFT_UP, glm::vec2(TILESHEET_H, TILESHEET_V));
-	sprite->addKeyframe(MOVE_LEFT_UP, glm::vec2(2 * TILESHEET_H, TILESHEET_V));
-
-	sprite->setAnimationSpeed(MOVE_LEFT_DOWN, 8);
-	sprite->addKeyframe(MOVE_LEFT_DOWN, glm::vec2(6 * TILESHEET_H, TILESHEET_V));
-	sprite->addKeyframe(MOVE_LEFT_DOWN, glm::vec2(7 * TILESHEET_H, TILESHEET_V));
-	sprite->addKeyframe(MOVE_LEFT_DOWN, glm::vec2(0.f, 2 * TILESHEET_V));
-
-	sprite->setAnimationSpeed(JUMP_LEFT, 8);
-	sprite->addKeyframe(JUMP_LEFT, glm::vec2(6 * TILESHEET_H, 3 * TILESHEET_V));
-	sprite->addKeyframe(JUMP_LEFT, glm::vec2(7 * TILESHEET_H, 3 * TILESHEET_V));
-	sprite->addKeyframe(JUMP_LEFT, glm::vec2(0.f, 4 * TILESHEET_V));
-	sprite->addKeyframe(JUMP_LEFT, glm::vec2(TILESHEET_H, 4 * TILESHEET_V));
-
-	sprite->setAnimationSpeed(JUMP_RIGHT, 8);
-	sprite->addKeyframe(JUMP_RIGHT, glm::vec2(2 * TILESHEET_H, 4 * TILESHEET_V));
-	sprite->addKeyframe(JUMP_RIGHT, glm::vec2(3 * TILESHEET_H, 4 * TILESHEET_V));
-	sprite->addKeyframe(JUMP_RIGHT, glm::vec2(4 * TILESHEET_H, 4 * TILESHEET_V));
-	sprite->addKeyframe(JUMP_RIGHT, glm::vec2(5 * TILESHEET_H, 4 * TILESHEET_V));
-
-	sprite->setAnimationSpeed(DIE_RIGHT, 5);
-	sprite->addKeyframe(DIE_RIGHT, glm::vec2(4 * TILESHEET_H, 5 * TILESHEET_V));
-	sprite->addKeyframe(DIE_RIGHT, glm::vec2(3 * TILESHEET_H, 5 * TILESHEET_V));
-	sprite->addKeyframe(DIE_RIGHT, glm::vec2(2 * TILESHEET_H, 5 * TILESHEET_V));
-	sprite->addKeyframe(DIE_RIGHT, glm::vec2(TILESHEET_H, 5 * TILESHEET_V));
-	sprite->addKeyframe(DIE_RIGHT, glm::vec2(0.f, 5 * TILESHEET_V));
-
-	sprite->setAnimationSpeed(DIE_LEFT, 5);
-	sprite->addKeyframe(DIE_LEFT, glm::vec2(0.f, 6 * TILESHEET_V));
-	sprite->addKeyframe(DIE_LEFT, glm::vec2(TILESHEET_H, 6 * TILESHEET_V));
-	sprite->addKeyframe(DIE_LEFT, glm::vec2(2 * TILESHEET_H, 6 * TILESHEET_V));
-	sprite->addKeyframe(DIE_LEFT, glm::vec2(3 * TILESHEET_H, 6 * TILESHEET_V));
-	sprite->addKeyframe(DIE_LEFT, glm::vec2(4 * TILESHEET_H, 6 * TILESHEET_V));
-
-	sprite->setAnimationSpeed(SWIM_LEFT, 8);
-	sprite->addKeyframe(SWIM_LEFT, glm::vec2(0.f, 7 * TILESHEET_V));
-
-	sprite->setAnimationSpeed(SWIM_RIGHT, 8);
-	sprite->addKeyframe(SWIM_RIGHT, glm::vec2(TILESHEET_H, 7 * TILESHEET_V));
-
-	sprite->setAnimationSpeed(CROUCH_LEFT, 8);
-	sprite->addKeyframe(CROUCH_LEFT, glm::vec2(0.f, 8 * TILESHEET_V));
-
-	sprite->setAnimationSpeed(CROUCH_RIGHT, 8);
-	sprite->addKeyframe(CROUCH_RIGHT, glm::vec2(TILESHEET_H, 8 * TILESHEET_V));
+	sprite->setAnimationSpeed(DEATH, 8);
+	sprite->addKeyframe(DEATH, glm::vec2(TILESHEET_H, TILESHEET_V));
 
 	posPlayer.x = 1;
 	sprite->changeAnimation(0);
@@ -150,32 +71,54 @@ void PlayerTV::update(int deltaTime)
 		return;
 	}
 
-	//LEFT IS PUSHED
-	if (Game::instance().getSpecialKey(GLUT_KEY_LEFT))
+	//CAMERA IS TILTED
+	if (Game::instance().getKey('s'))
 	{
 		//sprite->incrementAngle(+0.1f);
 		angle += 0.1f;
 	}
 
-	//RIGHT IS PUSHED
-	else if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
+	//CAMERA IS TILTED
+	else if (Game::instance().getKey('a'))
 	{
 		//sprite->incrementAngle(-0.1f);
 		angle -= 0.1f;
 	}
 	
+	bool walking = false;
 	//UP IS PUSHED
 	if (Game::instance().getSpecialKey(GLUT_KEY_UP))
 	{
-		posPlayer.x -= cos(angle)*0.75f;
-		posPlayer.y += sin(angle)*0.75f;
+		walking = true;
+		posPlayer.x -= cos(angle)*1.25f;
+		posPlayer.y += sin(angle)*1.25f;
 	}
 
 	//DOWN IS PUSHED
 	else if (Game::instance().getSpecialKey(GLUT_KEY_DOWN))
 	{
-		posPlayer.x += cos(angle)*0.75f;
-		posPlayer.y -= sin(angle)*0.75f;
+		walking = true;
+
+		posPlayer.x += cos(angle)*1.25f;
+		posPlayer.y -= sin(angle)*1.25f;
+	}
+
+	//DOWN IS PUSHED
+	 if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
+	{
+		 walking = true;
+
+		posPlayer.x += cos(angle+(3.14/2))*1.25f;
+		posPlayer.y -= sin(angle+(3.14/2))*1.25f;
+	}
+
+	//DOWN IS PUSHED
+	else if (Game::instance().getSpecialKey(GLUT_KEY_LEFT))
+	{
+		 walking = true;
+
+		posPlayer.x += cos(angle-(3.14/2))*1.25f;
+		posPlayer.y -= sin(angle-(3.14/2))*1.25f;
 	}
 
 	//fire a bullet
@@ -186,65 +129,37 @@ void PlayerTV::update(int deltaTime)
 	}
 	else x_pressed = false;
 
+	if (walking && sprite->animation() != WALK) sprite->changeAnimation(WALK);
+	if (!walking) sprite->changeAnimation(STAND);
+
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
 }
 
 void PlayerTV::update_death() {
-	if (sprite->animation() != DIE_LEFT) {
-		sprite->changeAnimation(DIE_LEFT);
-		bJumping = true;
-		jumpAngle = 0;
-		startY = posPlayer.y;
+	if (death_ticks == 0) {
+		sprite->changeAnimation(DEATH);
 	}
+	++death_ticks;
+	if (death_ticks >= 100) {
+		death_ticks = 0;
+		dying = false;
+		--lives;
+		if (lives <= 0) {
+			//0 vides
+			scene->playerDeath();
 
-	bool dead = false;
-
-	if (bJumping)
-	{
-		if (jumpAngle == 180)
-		{
-			bJumping = false;
-			posPlayer.y = startY;
 		}
-		else
-		{
-			posPlayer.y = startY - 96 * sin(3.14159f * jumpAngle / 180.f);
-			if (jumpAngle > 90)
-				bJumping = !map->collisionMoveDown(posPlayer, glm::ivec2(32, 48), &posPlayer.y);
+		else {
+			//queden vides
+			scene->playerRespawn();
 		}
-	}
-	else
-	{
-		posPlayer.y += FALL_STEP;
-		if (map->collisionMoveDown(posPlayer, glm::ivec2(32, 48), &posPlayer.y)) {
-			--lives;
-			if (lives <= 0) {
-				//0 vides
-				scene->playerDeath();
-				dead = true;
-			}
-			else {
-				//queden vides
-				scene->playerRespawn();
-			}
-		}
-	}
-
-	if (!dead) {
-		posPlayer.x -= 2;
-		if (map->collisionMoveLeft(posPlayer, glm::ivec2(32, 32)))
-		{
-			posPlayer.x += 2;
-		}
-
-		sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
 	}
 
 }
 
-void PlayerTV::render()
+void PlayerTV::render(glm::vec2 posPlayer, float angle)
 {
-	if (inv_frames % 2 == 0) sprite->render();
+	if (inv_frames % 2 == 0) sprite->render(posPlayer, 0.f);
 }
 
 void PlayerTV::setTileMap(TileMap *tileMap)
@@ -260,8 +175,17 @@ void PlayerTV::setPosition(const glm::vec2 &pos)
 
 
 void PlayerTV::fireBullet() {
-
+	float shoot_angle = (3 * 3.14 / 4);
+	float hypothenuse = 22.62;
+	float diff = angle - (3.14 / 2);
 	glm::vec2 bulletSpawn = posPlayer;
+	//center
+	bulletSpawn.x += 16;
+	bulletSpawn.y += 16;
+	shoot_angle += diff;
+	bulletSpawn.x -= cos(shoot_angle)*hypothenuse;
+	bulletSpawn.y += sin(shoot_angle)*hypothenuse;
+
 	scene->addBullet(angle, bulletSpawn, true);
 }
 
@@ -296,4 +220,8 @@ bool PlayerTV::getCrouch() {
 
 bool PlayerTV::getWater() {
 	return water;
+}
+
+float PlayerTV::getAngle() {
+	return angle;
 }
