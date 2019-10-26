@@ -235,6 +235,10 @@ void PlayerTV::setLives(int lives) {
 	this->lives = lives;
 }
 
+int PlayerTV::getLives() {
+	return lives;
+}
+
 bool PlayerTV::getCrouch() {
 	return crouch;
 }

@@ -16,18 +16,18 @@
 void Camera::update(int deltaTime, glm::ivec2 posplayer) {
 	posplayer.x += TMP_PLAYER_WIDTH;
 	int diff = posplayer.x - posCamera.x;
-	if (diff > CAMERA_WIDTH / 2) {
+	if (diff > CAMERA_WIDTH / 2 && (216 * 16 - posCamera.x) >= CAMERA_WIDTH) {
 		posCamera.x = posplayer.x - CAMERA_WIDTH / 2;
 	}
-	if (TV) {
+	if (this->TV) {
 		posCamera.x = posplayer.x + TMP_PLAYER_WIDTH - CAMERA_WIDTH / 2;
-		posCamera.y = posplayer.y + TMP_PLAYER_HEIGHT - CAMERA_WIDTH / 2;
+		posCamera.y = posplayer.y + TMP_PLAYER_HEIGHT - CAMERA_HEIGHT / 2;
 	}
 }
 
 glm::mat4 Camera::calcProj() {
 	//if (TV) return glm::ortho((float)posCamera.x - CAMERA_WIDTH/2, (float)(posCamera.x + CAMERA_WIDTH/2), (float)(posCamera.y + CAMERA_WIDTH/2), (float)posCamera.y - CAMERA_WIDTH/2);
-	return glm::ortho((float)posCamera.x, (float)(posCamera.x + CAMERA_WIDTH), (float)(posCamera.y+ CAMERA_WIDTH), (float)posCamera.y);
+	return glm::ortho((float)posCamera.x, (float)(posCamera.x + CAMERA_WIDTH), (float)(posCamera.y+ CAMERA_HEIGHT), (float)posCamera.y);
 }
 
 void Camera::setCameraPos(glm::ivec2 newpos) {

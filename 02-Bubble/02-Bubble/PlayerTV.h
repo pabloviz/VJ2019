@@ -35,6 +35,7 @@ public:
 	void update_death();
 
 	void setLives(int lives);
+	int getLives();
 	float getAngle();
 
 	glm::ivec2 getPosPlayer();

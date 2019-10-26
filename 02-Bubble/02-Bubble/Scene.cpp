@@ -8,6 +8,8 @@
 #define SCREEN_X 32
 #define SCREEN_Y 16
 
+#define INIT_PLAYER_X_TILES 4 //200
+#define INIT_PLAYER_Y_TILES 2
 #define INIT_PLAYER_X_TILES 0
 #define INIT_PLAYER_Y_TILES 0
 
@@ -75,7 +77,7 @@ void Scene::init() //changed
 	}
 
 	currentTime = 0.0f;
-	TV = false;
+	TV = true;
 
 	if (!TV) {
 		player = new Player();
@@ -102,6 +104,11 @@ void Scene::init() //changed
 	powerup->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
 	powerup->setPosition(glm::vec2(15 * map->getTileSize(), 10 * map->getTileSize()));
 	powerup->setTileMap(map);
+	for (int i = 0; i < PLAYER_LIVES; ++i) {
+		Medalla * medalla = new Medalla();
+		medalla->iniMedalla(glm::ivec2(1 + 16*i,4), texProgram);
+		vides.push_back(medalla);
+	}
 
 	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
 	
@@ -138,10 +145,14 @@ void Scene::update(int deltaTime)
 	}
 	if (powerup != NULL) powerup->update(deltaTime);
 	if (boss != NULL) boss->update(deltaTime);
-	if (ticks % 2 == 0) {
-		if (camera != NULL && player != NULL) camera->update(deltaTime, player->getPosPlayer());
-		if (camera != NULL && playertv != NULL) camera->update(deltaTime, playertv->getPosPlayer());
-	}
+
+	if (ticks % 2 == 0)
+		if (camera != NULL && (player != NULL || playertv != NULL)) {
+			camera->update(deltaTime, posPlayer);
+			for (int i = 0; i < PLAYER_LIVES; ++i)
+				if (vides[i] != NULL) vides[i]->setPos(camera->getCameraPos());
+		}
+
 	if (enemies[0] != NULL) enemies[0]->update(deltaTime);
 	if (map != NULL) {
 		map->updateWater(deltaTime);
@@ -203,6 +214,12 @@ void Scene::render()
 		if (bullets[i] != NULL) bullets[i]->render(posPlayer, angle);
 	}
 	if (powerup != NULL) powerup->render(posPlayer, angle);
+	int lives;
+	if (TV && playertv != NULL) lives = playertv->getLives();
+	else if (!TV && player != NULL) lives = player->getLives();
+	for (int i = 0; i < lives; ++i)
+		if (vides[i] != NULL) vides[i]->render();
+	
 }
 
 void Scene::initShaders()
@@ -269,7 +286,9 @@ void Scene::checkEnemyCollisions() {
 					}
 				}
 			}
-			if (player != NULL && bullets[i] != NULL && bullets[i]->farFromPlayer(player->getPosPlayer())) despawnBullet(i);
+			if (player != NULL && bullets[i] != NULL && bullets[i]->farFromPlayer(posPlayer)) despawnBullet(i);
+			if (playertv != NULL && bullets[i] != NULL && bullets[i]->farFromPlayer(posPlayer)) despawnBullet(i);
+
 		}
 	}
 }

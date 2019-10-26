@@ -13,6 +13,7 @@
 #include "Boss.h"
 #include "Camera.h"
 #include "ObjectMap.h"
+#include "Medalla.h"
 
 // Scene contains all the entities of our game.
 // It is responsible for updating and render them.
@@ -67,6 +68,7 @@ private:
 	int ticks;
 	Camera *camera;
 	int maxEnemies;
+	vector<Medalla*> vides;
 	float angle;
 	glm::vec2 posPlayer;
 	bool TV;
