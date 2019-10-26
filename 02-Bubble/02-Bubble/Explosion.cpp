@@ -5,11 +5,11 @@ Explosion::Explosion() {
 	posExplosion = glm::vec2(0, 0);
 }
 
-void Explosion::init(ShaderProgram& shaderProgram) {
+void Explosion::init(ShaderProgram& shaderProgram, Scene *scene) {
 
 	tilesheet.loadFromFile("images/explosion.png", TEXTURE_PIXEL_FORMAT_RGBA);
 
-	sprite = Sprite::createSprite(glm::ivec2(32, 32), glm::vec2(0.25, 1.0), &tilesheet, &shaderProgram);
+	sprite = Sprite::createSprite(glm::ivec2(32, 32), glm::vec2(0.25, 1.0), &tilesheet, &shaderProgram, scene);
 	sprite->setNumberAnimations(1);
 	sprite->setAnimationSpeed(0, 5);
 	sprite->addKeyframe(0, glm::vec2(0,0));
@@ -29,7 +29,7 @@ glm::ivec2 Explosion::getPos() {
 void Explosion::updateExplosion(int deltaTime) {
 	sprite->update(deltaTime);
 }
-void Explosion::renderExplosion() {
-	sprite->render();
+void Explosion::renderExplosion(glm::vec2 posPlayer, float angle) {
+	sprite->render(posPlayer, angle);
 }
 

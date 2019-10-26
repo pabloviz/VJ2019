@@ -31,7 +31,7 @@ void Boss::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Scen
 	this->life = 5;
 
 	spritesheet.loadFromFile("images/boss_sprites.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	sprite = Sprite::createSprite(glm::ivec2(128, 128), glm::vec2(TILESHEET_H, TILESHEET_V), &spritesheet, &shaderProgram);
+	sprite = Sprite::createSprite(glm::ivec2(128, 128), glm::vec2(TILESHEET_H, TILESHEET_V), &spritesheet, &shaderProgram, scene);
 	sprite->setNumberAnimations(3);
 
 	sprite->setAnimationSpeed(CLOSED, 8);
@@ -106,9 +106,9 @@ void Boss::updateDeath() {
 	if (deathTicks >= 70) scene->bossDeath();
 }
 
-void Boss::render()
+void Boss::render(glm::vec2 posPlayer, float angle)
 {
-	sprite->render();
+	sprite->render(posPlayer, angle);
 }
 
 void Boss::setTileMap(TileMap *tileMap)

@@ -21,12 +21,12 @@ class TileMap
 
 public:
 	// Tile maps can only be created inside an OpenGL context
-	static TileMap *createTileMap(const string &levelFile, const glm::vec2 &minCoords, ShaderProgram &program);
+	static TileMap *createTileMap(const string &levelFile, const glm::vec2 &minCoords, ShaderProgram &program, Scene *scene);
 
-	TileMap(const string &levelFile, const glm::vec2 &minCoords, ShaderProgram &program);
+	TileMap(const string &levelFile, const glm::vec2 &minCoords, ShaderProgram &program, Scene *scene);
 	~TileMap();
 
-	void render() const;
+	void render(glm::vec2 posPlayer, float angle) const;
 	void free();
 	
 	int getTileSize() const { return tileSize; }
@@ -38,10 +38,10 @@ public:
 
 	
 	void iniWater(ShaderProgram& shaderProgram, const glm::ivec2& tileMapPos);
-	void renderWater();
+	void renderWater(glm::vec2 posPlayer, float angle);
 	void updateWater(int deltaTime);
 	void iniBridges(ShaderProgram& shaderProgram, const glm::ivec2& tileMapPos);
-	void renderBridges();
+	void renderBridges(glm::vec2 posPlayer, float angle);
 	void updateBridges(int deltaTime, glm::ivec2 posplayer);
 
 	
@@ -60,6 +60,7 @@ private:
 	int *map;
 	vector<Sprite *> water;
 	vector<vector <Bridge *> > bridges;
+	Scene *scene;
 
 
 };

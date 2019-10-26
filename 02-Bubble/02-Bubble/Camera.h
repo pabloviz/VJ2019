@@ -15,6 +15,7 @@ private:
 
 	glm::ivec2 posCamera;
 	float angle = 0.f;
+	bool TV = true;
 	//float CameraXspeed, CameraYSpeed;
 
 };

@@ -7,7 +7,6 @@
 #include "Bullet.h"
 #include "Player.h"
 
-class Scene;
 
 class Boss
 {
@@ -15,7 +14,7 @@ class Boss
 public:
 	void init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Scene *scene);
 	void update(int deltaTime);
-	void render();
+	void render(glm::vec2 posPlayer, float angle);
 
 	void setTileMap(TileMap *tileMap);
 	void setPosition(const glm::vec2 &pos);

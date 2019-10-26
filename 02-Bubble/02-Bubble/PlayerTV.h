@@ -10,15 +10,14 @@
 // Player is basically a Sprite that represents the player. As such it has
 // all properties it needs to track its movement, jumping, and collisions.
 
-class Scene;
 
 class PlayerTV
 {
 
 public:
-	void init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Scene *scene);
+	void init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Scene *scene, float angle);
 	void update(int deltaTime);
-	void render();
+	void render(glm::vec2 posPlayer, float angle);
 
 	void setTileMap(TileMap *tileMap);
 	void setPosition(const glm::vec2 &pos);
@@ -36,6 +35,8 @@ public:
 	void update_death();
 
 	void setLives(int lives);
+	int getLives();
+	float getAngle();
 
 	glm::ivec2 getPosPlayer();
 
@@ -52,6 +53,7 @@ private:
 	float startY, angle;
 	int inv_frames;
 	int lives;
+	int death_ticks;
 	Texture spritesheet;
 	Sprite *sprite;
 	TileMap *map;

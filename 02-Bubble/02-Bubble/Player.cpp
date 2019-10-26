@@ -35,7 +35,7 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Sc
 	spread = false;
 
 	spritesheet.loadFromFile("images/contraspritesheet.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	sprite = Sprite::createSprite(glm::ivec2(32, 48), glm::vec2(TILESHEET_H, TILESHEET_V), &spritesheet, &shaderProgram);
+	sprite = Sprite::createSprite(glm::ivec2(32, 48), glm::vec2(TILESHEET_H, TILESHEET_V), &spritesheet, &shaderProgram, scene);
 	sprite->setNumberAnimations(18);
 	
 		sprite->setAnimationSpeed(STAND_LEFT, 8);
@@ -354,9 +354,9 @@ void Player::update_death() { //changed
 
 }
 
-void Player::render()
+void Player::render(glm::vec2 posPlayer, float angle)
 {
-	if (inv_frames % 2 == 0) sprite->render();
+	if (inv_frames % 2 == 0) sprite->render(posPlayer, angle);
 }
 
 void Player::setTileMap(TileMap *tileMap)
