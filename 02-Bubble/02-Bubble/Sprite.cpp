@@ -68,6 +68,29 @@ void Sprite::render(glm::vec2 posPlayer, float angle)
 	glDisable(GL_TEXTURE_2D);
 }
 
+void Sprite::renderChase(glm::vec2 posPlayer, float angle1, float angle2)
+{
+	glm::mat4 modelview = glm::mat4(1.0f);
+
+	modelview = glm::translate(modelview, glm::vec3(posPlayer.x + 48, posPlayer.y + 32, 0.f));
+	modelview = glm::rotate(modelview, angle1, glm::vec3(0, 0, 1));
+	modelview = glm::translate(modelview, glm::vec3(-(posPlayer.x + 48), -(posPlayer.y + 32), 0.f));
+	modelview = glm::translate(modelview, glm::vec3(position.x, position.y, 0.f));
+
+	modelview = glm::translate(modelview, glm::vec3(16, 28, 0.f));
+	modelview = glm::rotate(modelview, angle2, glm::vec3(0, 0, 3));
+	modelview = glm::translate(modelview, glm::vec3(-16, -24, 0.f));
+	shaderProgram->setUniformMatrix4f("modelview", modelview);
+	shaderProgram->setUniform2f("texCoordDispl", texCoordDispl.x, texCoordDispl.y);
+	glEnable(GL_TEXTURE_2D);
+	texture->use();
+	glBindVertexArray(vao);
+	glEnableVertexAttribArray(posLocation);
+	glEnableVertexAttribArray(texCoordLocation);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glDisable(GL_TEXTURE_2D);
+}
+
 void Sprite::free()
 {
 	glDeleteBuffers(1, &vbo);

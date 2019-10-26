@@ -77,7 +77,7 @@ void Scene::init() //changed
 	}
 
 	currentTime = 0.0f;
-	TV = true;
+	TV = false;
 
 	if (!TV) {
 		player = new Player();
@@ -136,12 +136,12 @@ void Scene::update(int deltaTime)
 		}
 	}
 	if (player != NULL) {
-		player->update(deltaTime);
 		posPlayer = player->getPosPlayer();
+		player->update(deltaTime);
 	}
 	if (playertv != NULL) {
-		playertv->update(deltaTime);
 		posPlayer = playertv->getPosPlayer();
+		playertv->update(deltaTime);
 	}
 	if (powerup != NULL) powerup->update(deltaTime);
 	if (boss != NULL) boss->update(deltaTime);
@@ -217,6 +217,7 @@ void Scene::render()
 	int lives;
 	if (TV && playertv != NULL) lives = playertv->getLives();
 	else if (!TV && player != NULL) lives = player->getLives();
+	else lives = 0;
 	for (int i = 0; i < lives; ++i)
 		if (vides[i] != NULL) vides[i]->render();
 	

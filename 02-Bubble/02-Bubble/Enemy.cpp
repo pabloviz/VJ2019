@@ -19,7 +19,7 @@
 
 enum EnemyAnims
 {
-	MOVE_LEFT, SHOOTUL, SHOOTL, SHOOTDL, SHOOTUR, SHOOTR, SHOOTDR, EXPLODE
+	MOVE_LEFT, SHOOTUL, SHOOTL, SHOOTDL, SHOOTUR, SHOOTR, SHOOTDR, EXPLODE, TV
 };
 
 enum EnemyType
@@ -44,7 +44,7 @@ void Enemy::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, int
 
 	spritesheet.loadFromFile("images/enemies_sprites.png", TEXTURE_PIXEL_FORMAT_RGBA);
 	sprite = Sprite::createSprite(glm::ivec2(32, 48), glm::vec2(TILESHEET_H, TILESHEET_V), &spritesheet, &shaderProgram, scene);
-	sprite->setNumberAnimations(8);
+	sprite->setNumberAnimations(9);
 
 	sprite->setAnimationSpeed(MOVE_LEFT, 8);
 	sprite->addKeyframe(MOVE_LEFT, glm::vec2(6 * TILESHEET_H, 0.f));
@@ -75,6 +75,9 @@ void Enemy::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, int
 	sprite->addKeyframe(EXPLODE, glm::vec2(4 * TILESHEET_H, TILESHEET_V));
 	sprite->addKeyframe(EXPLODE, glm::vec2(5 * TILESHEET_H, TILESHEET_V));
 	sprite->addKeyframe(EXPLODE, glm::vec2(6 * TILESHEET_H, TILESHEET_V));
+
+	sprite->setAnimationSpeed(TV, 8);
+	sprite->addKeyframe(TV, glm::vec2(7 * TILESHEET_H, TILESHEET_V));
 
 
 	sprite->changeAnimation(0);
@@ -124,6 +127,7 @@ void Enemy::update(int deltaTime)
 			posAux.y = posPlayer.y - posEnemy.y;
 			angle = -atan(posAux.y / posAux.x);
 			if (posPlayer.x > posEnemy.x) angle += 3.14f;
+			
 
 			if (cos(angle) < 0) {
 				posEnemyAux.x += 25;
@@ -155,6 +159,7 @@ void Enemy::update(int deltaTime)
 
 	if (type == CHASE) {
 
+		sprite->changeAnimation(TV);
 		glm::vec2 posPlayer = scene->getPosPlayer();
 		glm::vec2 posAux;
 		glm::vec2 posEnemyAux = posEnemy;
@@ -162,19 +167,31 @@ void Enemy::update(int deltaTime)
 
 		if (posPlayer.x != -1) { //player must exist, and enemy fires with an interval between bullets
 
-			posAux.x = posPlayer.x - posEnemy.x;
-			posAux.y = posPlayer.y - posEnemy.y;
+			glm::vec2 posEnemyAux = posEnemy;
+			posEnemyAux.x += 16;
+			posEnemyAux.y += 28;
+			posAux.x = posPlayer.x - posEnemyAux.x;
+			posAux.y = posPlayer.y - posEnemyAux.y;
 			angle = -atan(posAux.y / posAux.x);
-			if (posPlayer.x > posEnemy.x) angle += 3.14f;
+			if (posPlayer.x >= posEnemyAux.x) angle += 3.14f;
 
 			this->angle = angle;
 
-			posEnemyAux.y += 16;
-			if (ticks % 500 == 0)
-				scene->addBullet(angle, posEnemy, false);
 
-			posEnemy.y += sin(angle)*0.2f;
-			posEnemy.x -= cos(angle)*0.2f;
+			if (ticks % 200 == 0) {
+				float hypothenuse = 33.94f;
+				glm::vec2 bulletSpawn = posEnemy;
+				//center
+				bulletSpawn.x += 16;
+				bulletSpawn.y += 24;
+				bulletSpawn.x -= cos(angle)*hypothenuse;
+				bulletSpawn.y += sin(angle)*hypothenuse;
+
+				scene->addBullet(angle, bulletSpawn, false);
+			}
+
+			if (posAux.y >= 50 || posAux.y <= -50) posEnemy.y += sin(angle)*0.2f;
+			if (posAux.x >= 50 || posAux.x <= -50) posEnemy.x -= cos(angle)*0.2f;
 		}
 
 	}
@@ -194,7 +211,8 @@ void Enemy::updateDeath() {
 
 void Enemy::render(glm::vec2 posPlayer, float angle)
 {
-	sprite->render(posPlayer, angle);
+	if (type == CHASE) sprite->renderChase(posPlayer, angle, -(this->angle - 3.14/2));
+	else sprite->render(posPlayer, angle);
 }
 
 void Enemy::setTileMap(TileMap *tileMap)

@@ -146,6 +146,8 @@ void Player::update(int deltaTime) //changed
 	water = false;
 	crouch = false;
 
+	if (posPlayer.y + 48 >= 14 * 16) dying = true;
+
 	if (dying) {
 		update_death();
 		return;

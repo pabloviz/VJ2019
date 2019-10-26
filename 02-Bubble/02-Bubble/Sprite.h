@@ -23,6 +23,7 @@ public:
 
 	void update(int deltaTime);
 	void render(glm::vec2 posPlayer, float angle);
+	void renderChase(glm::vec2 posPlayer, float angle1, float angle2);
 	void free();
 
 	void setNumberAnimations(int nAnimations);

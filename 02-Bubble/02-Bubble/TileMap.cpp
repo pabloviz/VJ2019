@@ -287,7 +287,7 @@ bool TileMap::collisionMoveDown(const glm::vec2 &pos, const glm::ivec2 &size, fl
 	for (int x = x0; x <= x1; x++)
 	{
 		int col = map[y * mapSize.x + x];
-		if (col < 2 || col == 97 || col == 98 || col == 94 || y == 13) { // y==13 map edge
+		if (col < 2 || col == 97 || col == 98 || col == 94 || (y == 13 && col>3 && col<15)) { // y==13 map edge
 			{
 				if (*posY - tileSize * y + size.y <= 4)
 				{
