@@ -137,7 +137,7 @@ void TileMap::prepareArrays(const glm::vec2 &minCoords, ShaderProgram &program)
 				bridges.push_back(newbridge);
 
 			}
-			if (tile < 4 || tile > 13) {
+			//if (tile < 4 || tile > 13) {
 				// Non-empty tile
 				nTiles++;
 				posTile = glm::vec2(minCoords.x + i * tileSize, minCoords.y + j * tileSize);
@@ -161,7 +161,7 @@ void TileMap::prepareArrays(const glm::vec2 &minCoords, ShaderProgram &program)
 				vertices.push_back(texCoordTile[1].x); vertices.push_back(texCoordTile[1].y);
 				vertices.push_back(posTile.x); vertices.push_back(posTile.y + blockSize);
 				vertices.push_back(texCoordTile[0].x); vertices.push_back(texCoordTile[1].y);
-			}
+			//}
 		}
 	}
 
