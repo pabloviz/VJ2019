@@ -51,7 +51,6 @@ bool TileMap::loadLevel(const string &levelFile)
 	string line, tilesheetFile;
 	stringstream sstream;
 	char tile;
-	char tile1; //IMPORTANT PABLO
 
 	fin.open(levelFile.c_str());
 	if (!fin.is_open())
@@ -111,6 +110,7 @@ void TileMap::prepareArrays(const glm::vec2 &minCoords, ShaderProgram &program)
 	vector<float> vertices;
 
 	halfTexel = glm::vec2(0.5f / tilesheet.width(), 0.5f / tilesheet.height());
+
 	for (int j = 0; j < mapSize.y; j++)
 	{
 		for (int i = 0; i < mapSize.x; i++)

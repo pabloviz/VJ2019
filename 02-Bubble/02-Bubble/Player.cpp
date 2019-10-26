@@ -449,6 +449,10 @@ void Player::setLives(int lives) {
 	this->lives = lives;
 }
 
+int Player::getLives() {
+	return lives;
+}
+
 bool Player::getCrouch() {
 	return crouch;
 }
