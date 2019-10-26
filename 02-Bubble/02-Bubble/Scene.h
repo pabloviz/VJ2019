@@ -54,7 +54,8 @@ private:
 private:
 	TileMap *map;
 	ObjectMap *obj;
-	PlayerTV *player;
+	Player *player;
+	PlayerTV *playertv;
 	Boss *boss;
 	vector<Enemy*> enemies;
 	vector<bool> spawnedEnemies;

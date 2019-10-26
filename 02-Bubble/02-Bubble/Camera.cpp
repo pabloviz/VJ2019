@@ -43,3 +43,7 @@ glm::ivec2 Camera::getCameraPos() {
 void Camera::rotateCamera(float angle) {
 	this->angle += angle;
 }
+
+void Camera::setTV(bool TV) {
+	this->TV = TV;
+}

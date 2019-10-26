@@ -74,11 +74,24 @@ void Scene::init() //changed
 		spawnedEnemies.push_back(false);
 	}
 
-	player = new PlayerTV();
-	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this, -(3.14f / 2.f));
-	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
-	player->setTileMap(map);
-	player->setLives(PLAYER_LIVES);
+	currentTime = 0.0f;
+	TV = false;
+
+	if (!TV) {
+		player = new Player();
+		player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
+		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
+		player->setTileMap(map);
+		player->setLives(PLAYER_LIVES);
+	}
+
+	else {
+		playertv = new PlayerTV();
+		playertv->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this, -(3.14f / 2.f));
+		playertv->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
+		playertv->setTileMap(map);
+		playertv->setLives(PLAYER_LIVES);
+	}
 
 	//boss = new Boss();
 	//boss->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
@@ -95,10 +108,10 @@ void Scene::init() //changed
 	camera = new Camera();
 	//camera->setCameraPos(player->getPosPlayer());
 	camera->setCameraPos(glm::ivec2(SCREEN_X, SCREEN_Y));
+	camera->setTV(TV);
 	projection = camera->calcProj();
 	//projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1 + 100), float(SCREEN_HEIGHT - 1), 0.f);
-	currentTime = 0.0f;
-	TV = true;
+	
 }
 
 void Scene::update(int deltaTime)
@@ -119,14 +132,20 @@ void Scene::update(int deltaTime)
 		player->update(deltaTime);
 		posPlayer = player->getPosPlayer();
 	}
+	if (playertv != NULL) {
+		playertv->update(deltaTime);
+		posPlayer = playertv->getPosPlayer();
+	}
 	if (powerup != NULL) powerup->update(deltaTime);
 	if (boss != NULL) boss->update(deltaTime);
-	if (ticks % 2 == 0)
+	if (ticks % 2 == 0) {
 		if (camera != NULL && player != NULL) camera->update(deltaTime, player->getPosPlayer());
+		if (camera != NULL && playertv != NULL) camera->update(deltaTime, playertv->getPosPlayer());
+	}
 	if (enemies[0] != NULL) enemies[0]->update(deltaTime);
 	if (map != NULL) {
 		map->updateWater(deltaTime);
-		map->updateBridges(deltaTime, player->getPosPlayer());
+		map->updateBridges(deltaTime, posPlayer);
 	}
 	for (int i = 0; i < MAX_BULLETS; ++i) {
 		if (bullets[i] != NULL) {
@@ -138,7 +157,6 @@ void Scene::update(int deltaTime)
 			glm::vec2 posEnemy = obj->getEnemyPos(i);
 			posEnemy.x *= TILE_SIZE;
 			posEnemy.y *= TILE_SIZE;
-			glm::vec2 posPlayer = player->getPosPlayer();
 			if (posPlayer.x >= posEnemy.x - (TILE_SIZE * 15)) {
 				spawnedEnemies[i] = true;
 				enemies[i] = new Enemy();
@@ -150,7 +168,9 @@ void Scene::update(int deltaTime)
 		if (enemies[i] != NULL) enemies[i]->update(deltaTime);
 	}
 	checkEnemyCollisions();
-	if (player != NULL && !player->getInvulnerable()) checkPlayerCollisions();
+	if (!TV && player != NULL && !player->getInvulnerable()) checkPlayerCollisions();
+	if (TV && playertv != NULL && !playertv->getInvulnerable()) checkPlayerCollisions();
+
 }
 
 void Scene::render()
@@ -174,6 +194,7 @@ void Scene::render()
 	if (boss != NULL) boss->render(posPlayer, angle);
 	map->renderWater(posPlayer, angle);
 	if (player != NULL) player->render(posPlayer, angle);
+	else if (playertv != NULL) playertv->render(posPlayer, angle);
 	for (int i = 0; i < maxEnemies; ++i) {
 		if (enemies[i] != NULL) enemies[i]->render(posPlayer, angle);
 	}
@@ -255,16 +276,17 @@ void Scene::checkEnemyCollisions() {
 
 void Scene::checkPlayerCollisions() {
 	glm::ivec2 bulletPos;
-	glm::ivec2 playerPos = player->getPosPlayer();
 	//ADJUSTING HITBOXES
 	int height = PLAYER_HEIGHT;
-	if (player->getCrouch() || player->getWater()) {
-		playerPos.y += 32;
-		height -= 32;
-	}
-	else {
-		playerPos.y += 16;
-		height -= 16;
+	if (!TV) {
+		if (player->getCrouch() || player->getWater()) {
+			posPlayer.y += 32;
+			height -= 32;
+		}
+		else {
+			posPlayer.y += 16;
+			height -= 16;
+		}
 	}
 
 	bool exists, hit;
@@ -273,12 +295,13 @@ void Scene::checkPlayerCollisions() {
 		bulletPos = getBulletPos(i, exists);
 		if (exists) {
 			hit = collides(bulletPos, BULLET_WIDTH, BULLET_HEIGHT,
-				playerPos, PLAYER_WIDTH, height) && !bullets[i]->getFriendly();
+				posPlayer, PLAYER_WIDTH, height) && !bullets[i]->getFriendly();
 			if (hit) {
 				despawnBullet(i);
-				player->die();
+				if (!TV)player->die();
+				else playertv->die();
 			}
-			else if (bullets[i]->farFromPlayer(playerPos)) despawnBullet(i);
+			else if (bullets[i]->farFromPlayer(posPlayer)) despawnBullet(i);
 
 		}
 	}
@@ -287,9 +310,10 @@ void Scene::checkPlayerCollisions() {
 		if (enemies[i] != NULL) {
 			glm::ivec2 enemyPos = enemies[i]->getEnemyPos();
 			hit = collides(enemyPos, ENEMY_WIDTH, ENEMY_HEIGHT,
-				playerPos, PLAYER_WIDTH, PLAYER_HEIGHT);
+				posPlayer, PLAYER_WIDTH, PLAYER_HEIGHT);
 			if (hit && !enemies[i]->getDying()) {
-				player->die();
+				if(!TV) player->die();
+				else playertv->die();
 			}
 		}
 	}
@@ -297,10 +321,11 @@ void Scene::checkPlayerCollisions() {
 	if (powerup != NULL) {
 		glm::ivec2 powerupPos = powerup->getPowerupPos();
 		hit = collides(powerupPos, POWERUP_WIDTH, POWERUP_HEIGHT,
-			  playerPos, PLAYER_WIDTH, PLAYER_HEIGHT);
+			  posPlayer, PLAYER_WIDTH, PLAYER_HEIGHT);
 		if (hit) {
 			despawnPowerup();
-			player->setSpread(true);
+			if (!TV)player->setSpread(true);
+			else playertv->setSpread(true);
 		}
 	}
 }
@@ -321,7 +346,8 @@ bool Scene::collides(glm::ivec2 pos1, int width1, int height1, glm::ivec2 pos2, 
 void Scene::addBullet (float angle, glm::vec2 posBullet, bool friendly) {
 	int stop = 1;
 	bool spread = false, cond = false;
-	if (friendly) spread = player->getSpread();
+	if (friendly && !TV) spread = player->getSpread();
+	else if (friendly) spread = playertv->getSpread();
 	if (spread) {
 		stop = 5;
 		angle -= 2 * 0.436; //25 degrees * 2
@@ -360,12 +386,19 @@ void Scene::despawnPowerup() {
 
 glm::ivec2 Scene::getPosPlayer() {
 	if (player != NULL) posPlayer = player->getPosPlayer();
+	else if (playertv != NULL) posPlayer = playertv->getPosPlayer();
 	return posPlayer;
 }
 
 void Scene::playerDeath() {
-	delete player;
-	player = NULL;
+	if (!TV) {
+		delete player;
+		player = NULL;
+	}
+	else {
+		delete playertv;
+		playertv = NULL;
+	}
 }
 
 void Scene::enemyDeath(int id) {
@@ -380,8 +413,13 @@ void Scene::bossDeath() {
 
 void Scene::playerRespawn() { //changed
 	glm::vec2 posPlayer = player->getPosPlayer();
-	if (!TV) posPlayer.y = 0;
-	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this, player->getAngle());
+
+	if (!TV) {
+		posPlayer.y = 0;
+		player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
+	}
+
+	if (TV) playertv->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this, playertv->getAngle());
 	player->setPosition(posPlayer);
 
 }

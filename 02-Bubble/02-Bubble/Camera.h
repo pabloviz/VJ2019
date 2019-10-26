@@ -9,13 +9,14 @@ public:
 	glm::mat4 calcProj();
 	void setCameraPos(glm::ivec2 newpos);
 	glm::ivec2 getCameraPos();
+	void setTV(bool TV);
 
 private:
 	void rotateCamera(float angle);
 
 	glm::ivec2 posCamera;
 	float angle = 0.f;
-	bool TV = true;
+	bool TV;
 	//float CameraXspeed, CameraYSpeed;
 
 };

@@ -247,13 +247,13 @@ bool TileMap::collisionMoveLeft(const glm::vec2 &pos, const glm::ivec2 &size) co
 	int x, y0, y1;
 
 	x = pos.x / tileSize;
-	y0 = (pos.y - size.y) / tileSize;
+	y0 = (pos.y) / tileSize;
 	y1 = (pos.y + size.y - 1) / tileSize;
 	//y1 /= 2.0;
 	for (int y = y0; y <= y1; y++)
 	{
 		int col = map[y * mapSize.x + x];
-		if (col < 2 || col == 97 || col == 98)
+		if (col == 0 || col == 1 || col == 97 || col == 98)
 			return true;
 	}
 
@@ -265,14 +265,13 @@ bool TileMap::collisionMoveRight(const glm::vec2 &pos, const glm::ivec2 &size) c
 	int x, y0, y1;
 
 	x = (pos.x + size.x - 1) / tileSize;
-	y0 = (pos.y - size.y) / tileSize;
+	y0 = (pos.y) / tileSize;
 	y1 = (pos.y + size.y - 1) / tileSize;
 	//y1 /= 2.0;
 	for (int y = y0; y <= y1; y++)
 	{
 		int col = map[y * mapSize.x + x];
-		if (col < 2 || col == 97 || col == 98)
-			return true;
+		if (col == 0 || col == 1 || col == 97 || col == 98) return true;
 	}
 
 	return false;
@@ -295,6 +294,28 @@ bool TileMap::collisionMoveDown(const glm::vec2 &pos, const glm::ivec2 &size, fl
 					*posY = tileSize * y - size.y;
 					return true;
 				}
+			}
+		}
+	}
+
+	return false;
+}
+
+bool TileMap::collisionMoveUp(const glm::vec2 &pos, const glm::ivec2 &size, float *posY) const //changed
+{
+	int x0, x1, y;
+
+	x0 = pos.x / tileSize;
+	x1 = (pos.x + size.x - 1) / tileSize;
+	y = (pos.y / tileSize);
+	for (int x = x0; x <= x1; x++)
+	{
+		int col = map[y * mapSize.x + x];
+		if (col < 2 || col == 97 || col == 98 || col == 94 || y == 13) { // y==13 map edge
+			{
+				
+				return true;
+				
 			}
 		}
 	}

@@ -60,7 +60,7 @@ void PlayerTV::update(int deltaTime)
 	sprite->update(deltaTime);
 	if (!invulnerable) inv_frames = 0;
 	else ++inv_frames;
-	if (inv_frames >= 200) invulnerable = false;
+	if (inv_frames >= 200000) invulnerable = false;
 
 	air = false;
 	water = false;
@@ -86,12 +86,13 @@ void PlayerTV::update(int deltaTime)
 	}
 	
 	bool walking = false;
+	glm::vec2 posPlayerAux = posPlayer;
 	//UP IS PUSHED
 	if (Game::instance().getSpecialKey(GLUT_KEY_UP))
 	{
 		walking = true;
-		posPlayer.x -= cos(angle)*1.25f;
-		posPlayer.y += sin(angle)*1.25f;
+		posPlayerAux.x -= cos(angle)*1.25f;
+		posPlayerAux.y += sin(angle)*1.25f;
 	}
 
 	//DOWN IS PUSHED
@@ -99,8 +100,8 @@ void PlayerTV::update(int deltaTime)
 	{
 		walking = true;
 
-		posPlayer.x += cos(angle)*1.25f;
-		posPlayer.y -= sin(angle)*1.25f;
+		posPlayerAux.x += cos(angle)*1.25f;
+		posPlayerAux.y -= sin(angle)*1.25f;
 	}
 
 	//DOWN IS PUSHED
@@ -108,8 +109,8 @@ void PlayerTV::update(int deltaTime)
 	{
 		 walking = true;
 
-		posPlayer.x += cos(angle+(3.14/2))*1.25f;
-		posPlayer.y -= sin(angle+(3.14/2))*1.25f;
+		posPlayerAux.x += cos(angle+(3.14/2))*1.25f;
+		posPlayerAux.y -= sin(angle+(3.14/2))*1.25f;
 	}
 
 	//DOWN IS PUSHED
@@ -117,9 +118,29 @@ void PlayerTV::update(int deltaTime)
 	{
 		 walking = true;
 
-		posPlayer.x += cos(angle-(3.14/2))*1.25f;
-		posPlayer.y -= sin(angle-(3.14/2))*1.25f;
+		posPlayerAux.x += cos(angle-(3.14/2))*1.25f;
+		posPlayerAux.y -= sin(angle-(3.14/2))*1.25f;
 	}
+
+	glm::vec2 size;
+	size.x = 32;
+	size.y = 32;
+	if (posPlayerAux.x < posPlayer.x) {
+		if (map->collisionMoveLeft(posPlayerAux, size)) posPlayerAux.x = posPlayer.x;
+	}
+	else if (posPlayerAux.x > posPlayer.x) {
+		if (map->collisionMoveRight(posPlayerAux, size)) posPlayerAux.x = posPlayer.x;
+	}
+
+	if (posPlayerAux.y > posPlayer.y) {
+		if (map->collisionMoveDown(posPlayerAux, size, &posPlayerAux.y)) posPlayerAux.y = posPlayer.y;
+	}
+
+	else if (posPlayerAux.y < posPlayer.y) {
+		if (map->collisionMoveUp(posPlayerAux, size, &posPlayerAux.y)) posPlayerAux.y = posPlayer.y;
+	}
+
+	posPlayer = posPlayerAux;
 
 	//fire a bullet
 	if (Game::instance().getKey('x')) {
