@@ -72,6 +72,7 @@ private:
 	float angle;
 	glm::vec2 posPlayer;
 	bool TV;
+	float win;
 };
 
 

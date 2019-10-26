@@ -64,6 +64,7 @@ void Scene::init() //changed
 	ticks = 0;
 	posPlayer.x = 0;
 	posPlayer.y = 0;
+	win = false;
 	
 	map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram, this);
 	map->iniWater(texProgram, glm::ivec2(SCREEN_X, SCREEN_Y));
@@ -163,6 +164,7 @@ void Scene::update(int deltaTime)
 			bullets[i]->update(deltaTime);
 		}
 	}
+	bool enemiesRemain = false;
 	for (int i = 0; i < maxEnemies; ++i) {
 		if (spawnedEnemies[i] == false) {
 			glm::vec2 posEnemy = obj->getEnemyPos(i);
@@ -175,12 +177,16 @@ void Scene::update(int deltaTime)
 				enemies[i]->setPosition(posEnemy);
 				enemies[i]->setTileMap(map);
 			}
+			
 		}
 		if (enemies[i] != NULL) enemies[i]->update(deltaTime);
+		if (!spawnedEnemies[i] || enemies[i] != NULL) enemiesRemain = true;
 	}
+	if (!win && !enemiesRemain && TV) win = true; // level 2 win condition, if everyone is dead
 	checkEnemyCollisions();
 	if (!TV && player != NULL && !player->getInvulnerable()) checkPlayerCollisions();
 	if (TV && playertv != NULL && !playertv->getInvulnerable()) checkPlayerCollisions();
+	if (win) exit(1);
 
 }
 

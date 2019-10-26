@@ -170,10 +170,10 @@ void Enemy::update(int deltaTime)
 			glm::vec2 posEnemyAux = posEnemy;
 			posEnemyAux.x += 16;
 			posEnemyAux.y += 28;
-			posAux.x = posPlayer.x - posEnemyAux.x;
-			posAux.y = posPlayer.y - posEnemyAux.y;
+			posAux.x = posPlayer.x+16 - posEnemyAux.x;
+			posAux.y = posPlayer.y+16 - posEnemyAux.y;
 			angle = -atan(posAux.y / posAux.x);
-			if (posPlayer.x >= posEnemyAux.x) angle += 3.14f;
+			if (posPlayer.x+16 >= posEnemyAux.x) angle += 3.14f;
 
 			this->angle = angle;
 
@@ -190,8 +190,30 @@ void Enemy::update(int deltaTime)
 				scene->addBullet(angle, bulletSpawn, false);
 			}
 
-			if (posAux.y >= 50 || posAux.y <= -50) posEnemy.y += sin(angle)*0.2f;
-			if (posAux.x >= 50 || posAux.x <= -50) posEnemy.x -= cos(angle)*0.2f;
+			posEnemyAux = posEnemy;
+			if (posAux.y >= 50 || posAux.y <= -50) posEnemyAux.y += sin(angle)*0.2f;
+			if (posAux.x >= 50 || posAux.x <= -50) posEnemyAux.x -= cos(angle)*0.2f;
+
+			glm::vec2 size;
+			size.x = 32;
+			size.y = 48;
+
+			if (posEnemyAux.x < posEnemy.x) {
+				if (map->collisionMoveLeft(posEnemyAux, size)) posEnemyAux.x = posEnemy.x;
+			}
+			else if (posEnemyAux.x > posEnemy.x) {
+				if (map->collisionMoveRight(posEnemyAux, size)) posEnemyAux.x = posEnemy.x;
+			}
+
+			if (posEnemyAux.y > posEnemy.y) {
+				if (map->collisionMoveDown(posEnemyAux, size, &posEnemyAux.y)) posEnemyAux.y = posEnemy.y;
+			}
+
+			else if (posEnemyAux.y < posEnemy.y) {
+				if (map->collisionMoveUp(posEnemyAux, size, &posEnemyAux.y)) posEnemyAux.y = posEnemy.y;
+			}
+
+			posEnemy = posEnemyAux;
 		}
 
 	}
