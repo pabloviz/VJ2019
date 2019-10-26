@@ -103,19 +103,19 @@ void Enemy::update(int deltaTime)
 			sprite->changeAnimation(MOVE_LEFT);
 		posEnemy.x -= 0.5;
 
-		if (map->collisionMoveLeft(posEnemy, glm::ivec2(32, 48)))
+		if (map->collisionMoveLeft(posEnemy, glm::ivec2(32, 48), true))
 		{
 			posEnemy.x += 0.5;
 		}
 
 		posEnemy.y += FALL_STEP;
-		map->collisionMoveDown(posEnemy, glm::ivec2(32, 48), &posEnemy.y);
+		map->collisionMoveDown(posEnemy, glm::ivec2(32, 48), &posEnemy.y, true);
 
 	}
 	else if (type == SHOOTING) {
 
 		posEnemy.y += FALL_STEP;
-		map->collisionMoveDown(posEnemy, glm::ivec2(32, 48), &posEnemy.y);
+		map->collisionMoveDown(posEnemy, glm::ivec2(32, 48), &posEnemy.y, true);
 		glm::vec2 posPlayer = scene->getPosPlayer();
 		glm::vec2 posAux;
 		glm::vec2 posEnemyAux = posEnemy;

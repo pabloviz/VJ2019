@@ -242,7 +242,7 @@ void TileMap::renderBridges(glm::vec2 posPlayer, float angle) {
 // Method collisionMoveDown also corrects Y coordinate if the box is
 // already intersecting a tile below.
 
-bool TileMap::collisionMoveLeft(const glm::vec2 &pos, const glm::ivec2 &size) const //changed
+bool TileMap::collisionMoveLeft(const glm::vec2 &pos, const glm::ivec2 &size, const bool TV) const //changed
 {
 	int x, y0, y1;
 
@@ -253,14 +253,14 @@ bool TileMap::collisionMoveLeft(const glm::vec2 &pos, const glm::ivec2 &size) co
 	for (int y = y0; y <= y1; y++)
 	{
 		int col = map[y * mapSize.x + x];
-		if (col == 0 || col == 1 || col == 97 || col == 98)
+		if ((!TV && (col == 0 || col == 1 || col == 97 || col == 98)) || (TV && (col < 13 || col >=56)))
 			return true;
 	}
 
 	return false;
 }
 
-bool TileMap::collisionMoveRight(const glm::vec2 &pos, const glm::ivec2 &size) const //changed
+bool TileMap::collisionMoveRight(const glm::vec2 &pos, const glm::ivec2 &size, const bool TV) const //changed
 {
 	int x, y0, y1;
 
@@ -271,13 +271,13 @@ bool TileMap::collisionMoveRight(const glm::vec2 &pos, const glm::ivec2 &size) c
 	for (int y = y0; y <= y1; y++)
 	{
 		int col = map[y * mapSize.x + x];
-		if (col == 0 || col == 1 || col == 97 || col == 98) return true;
+		if ((!TV && (col == 0 || col == 1 || col == 97 || col == 98)) || (TV && (col < 13 || col >= 56))) return true;
 	}
 
 	return false;
 }
 
-bool TileMap::collisionMoveDown(const glm::vec2 &pos, const glm::ivec2 &size, float *posY) const //changed
+bool TileMap::collisionMoveDown(const glm::vec2 &pos, const glm::ivec2 &size, float *posY, const bool TV) const //changed
 {
 	int x0, x1, y;
 
@@ -287,7 +287,7 @@ bool TileMap::collisionMoveDown(const glm::vec2 &pos, const glm::ivec2 &size, fl
 	for (int x = x0; x <= x1; x++)
 	{
 		int col = map[y * mapSize.x + x];
-		if (col < 2 || col == 97 || col == 98 || col == 94 || (y == 13 && col>3 && col<15)) { // y==13 map edge
+		if (!TV && (col < 2 || col == 97 || col == 98 || col == 94 || (y == 13 && col>3 && col<15)) || (TV && (col < 13 || col >= 56))) { // y==13 map edge
 			{
 				if (*posY - tileSize * y + size.y <= 4)
 				{
@@ -301,7 +301,7 @@ bool TileMap::collisionMoveDown(const glm::vec2 &pos, const glm::ivec2 &size, fl
 	return false;
 }
 
-bool TileMap::collisionMoveUp(const glm::vec2 &pos, const glm::ivec2 &size, float *posY) const //changed
+bool TileMap::collisionMoveUp(const glm::vec2 &pos, const glm::ivec2 &size, float *posY, const bool TV) const //changed
 {
 	int x0, x1, y;
 
@@ -311,7 +311,7 @@ bool TileMap::collisionMoveUp(const glm::vec2 &pos, const glm::ivec2 &size, floa
 	for (int x = x0; x <= x1; x++)
 	{
 		int col = map[y * mapSize.x + x];
-		if (col < 2 || col == 97 || col == 98 || col == 94 || y == 13) { // y==13 map edge
+		if (!TV && (col < 2 || col == 97 || col == 98 || col == 94 || (y == 13 && col>3 && col<15)) || (TV && (col < 13 || col >= 56))) { // y==13 map edge
 			{
 				
 				return true;

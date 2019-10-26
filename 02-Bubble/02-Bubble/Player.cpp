@@ -185,14 +185,14 @@ void Player::update(int deltaTime) //changed
 		{
 			posPlayer.y = startY - JUMP_HEIGHT * sin(3.14159f * jumpAngle / 180.f);
 			if (jumpAngle > 90)
-				bJumping = !map->collisionMoveDown(posPlayer, glm::ivec2(32, 48), &posPlayer.y);
+				bJumping = !map->collisionMoveDown(posPlayer, glm::ivec2(32, 48), &posPlayer.y, true);
 		}
 		air = true;
 	}
 	else
 	{
 		posPlayer.y += FALL_STEP;
-		if (map->collisionMoveDown(posPlayer, glm::ivec2(32, 48), &posPlayer.y))
+		if (map->collisionMoveDown(posPlayer, glm::ivec2(32, 48), &posPlayer.y, true))
 		{
 			if (Game::instance().getKey('z'))
 			{
@@ -237,7 +237,7 @@ void Player::update(int deltaTime) //changed
 		//CHECK COLLISION
 		glm::vec2 posAux = posPlayer;
 		posAux.y += 32;
-		if (!crouch && !(water && map->collisionMoveLeft(posAux, glm::ivec2(32, 16)))) {
+		if (!crouch && !(water && map->collisionMoveLeft(posAux, glm::ivec2(32, 16), true))) {
 			posPlayer.x -= 0.75;
 			
 		}
@@ -263,7 +263,7 @@ void Player::update(int deltaTime) //changed
 		//CHECK COLLISION
 		glm::ivec2 posAux = posPlayer;
 		posAux.y += 32;
-		if (!crouch && !(water && map->collisionMoveRight(posAux, glm::ivec2(32, 16)))) {
+		if (!crouch && !(water && map->collisionMoveRight(posAux, glm::ivec2(32, 16),true))) {
 			posPlayer.x += 0.75;
 			
 		}
@@ -324,13 +324,13 @@ void Player::update_death() { //changed
 		{
 			posPlayer.y = startY - 96 * sin(3.14159f * jumpAngle / 180.f);
 			if (jumpAngle > 90)
-				bJumping = !map->collisionMoveDown(posPlayer, glm::ivec2(32, 48), &posPlayer.y);
+				bJumping = !map->collisionMoveDown(posPlayer, glm::ivec2(32, 48), &posPlayer.y, true);
 		}
 	}
 	else
 	{
 		posPlayer.y += FALL_STEP;
-		if (map->collisionMoveDown(posPlayer, glm::ivec2(32, 48), &posPlayer.y)) {
+		if (map->collisionMoveDown(posPlayer, glm::ivec2(32, 48), &posPlayer.y, true)) {
 			--lives;
 			if (lives <= 0) {
 				//0 vides
@@ -346,7 +346,7 @@ void Player::update_death() { //changed
 
 	if (!dead) {
 		posPlayer.x -= 2;
-		if (map->collisionMoveLeft(posPlayer, glm::ivec2(32, 32)))
+		if (map->collisionMoveLeft(posPlayer, glm::ivec2(32, 32), true))
 		{
 			posPlayer.x += 2;
 		}
