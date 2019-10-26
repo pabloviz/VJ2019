@@ -10,8 +10,8 @@
 
 #define INIT_PLAYER_X_TILES 4 //200
 #define INIT_PLAYER_Y_TILES 2
-#define INIT_PLAYER_X_TILES 0
-#define INIT_PLAYER_Y_TILES 0
+//#define INIT_PLAYER_X_TILES 0
+//#define INIT_PLAYER_Y_TILES 0
 
 #define MAX_BULLETS 40
 
@@ -60,16 +60,24 @@ Scene::~Scene()
 
 void Scene::init() //changed
 {
+	//TV = false;
+	TV = true;
 	initShaders();
 	ticks = 0;
 	posPlayer.x = 0;
 	posPlayer.y = 0;
 	win = false;
-	
-	map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram, this);
-	map->iniWater(texProgram, glm::ivec2(SCREEN_X, SCREEN_Y));
-	obj = new ObjectMap("levels/obj01.txt");
-	maxEnemies = obj->getSize();
+	if (TV) {
+		map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram, this);
+		obj = new ObjectMap("levels/obj01.txt"); //TODO: change
+		maxEnemies = obj->getSize();
+	}
+	else {
+		map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram, this);
+		map->iniWater(texProgram, glm::ivec2(SCREEN_X, SCREEN_Y));
+		obj = new ObjectMap("levels/obj01.txt");
+		maxEnemies = obj->getSize();
+	}
 	for (int i = 0; i < MAX_BULLETS; ++i) bullets.push_back(NULL);
 
 	for (int i = 0; i < maxEnemies; ++i) {
@@ -78,7 +86,7 @@ void Scene::init() //changed
 	}
 
 	currentTime = 0.0f;
-	TV = false;
+	
 
 	if (!TV) {
 		player = new Player();

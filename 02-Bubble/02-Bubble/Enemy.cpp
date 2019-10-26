@@ -103,19 +103,19 @@ void Enemy::update(int deltaTime)
 			sprite->changeAnimation(MOVE_LEFT);
 		posEnemy.x -= 0.5;
 
-		if (map->collisionMoveLeft(posEnemy, glm::ivec2(32, 48)))
+		if (map->collisionMoveLeft(posEnemy, glm::ivec2(32, 48), false))
 		{
 			posEnemy.x += 0.5;
 		}
 
 		posEnemy.y += FALL_STEP;
-		map->collisionMoveDown(posEnemy, glm::ivec2(32, 48), &posEnemy.y);
+		map->collisionMoveDown(posEnemy, glm::ivec2(32, 48), &posEnemy.y, false);
 
 	}
 	else if (type == SHOOTING) {
 
 		posEnemy.y += FALL_STEP;
-		map->collisionMoveDown(posEnemy, glm::ivec2(32, 48), &posEnemy.y);
+		map->collisionMoveDown(posEnemy, glm::ivec2(32, 48), &posEnemy.y, false);
 		glm::vec2 posPlayer = scene->getPosPlayer();
 		glm::vec2 posAux;
 		glm::vec2 posEnemyAux = posEnemy;
@@ -199,18 +199,18 @@ void Enemy::update(int deltaTime)
 			size.y = 48;
 
 			if (posEnemyAux.x < posEnemy.x) {
-				if (map->collisionMoveLeft(posEnemyAux, size)) posEnemyAux.x = posEnemy.x;
+				if (map->collisionMoveLeft(posEnemyAux, size, true)) posEnemyAux.x = posEnemy.x;
 			}
 			else if (posEnemyAux.x > posEnemy.x) {
-				if (map->collisionMoveRight(posEnemyAux, size)) posEnemyAux.x = posEnemy.x;
+				if (map->collisionMoveRight(posEnemyAux, size, true)) posEnemyAux.x = posEnemy.x;
 			}
 
 			if (posEnemyAux.y > posEnemy.y) {
-				if (map->collisionMoveDown(posEnemyAux, size, &posEnemyAux.y)) posEnemyAux.y = posEnemy.y;
+				if (map->collisionMoveDown(posEnemyAux, size, &posEnemyAux.y, true)) posEnemyAux.y = posEnemy.y;
 			}
 
 			else if (posEnemyAux.y < posEnemy.y) {
-				if (map->collisionMoveUp(posEnemyAux, size, &posEnemyAux.y)) posEnemyAux.y = posEnemy.y;
+				if (map->collisionMoveUp(posEnemyAux, size, &posEnemyAux.y, true)) posEnemyAux.y = posEnemy.y;
 			}
 
 			posEnemy = posEnemyAux;

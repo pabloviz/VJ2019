@@ -126,18 +126,18 @@ void PlayerTV::update(int deltaTime)
 	size.x = 32;
 	size.y = 32;
 	if (posPlayerAux.x < posPlayer.x) {
-		if (map->collisionMoveLeft(posPlayerAux, size)) posPlayerAux.x = posPlayer.x;
+		if (map->collisionMoveLeft(posPlayerAux, size, true)) posPlayerAux.x = posPlayer.x;
 	}
 	else if (posPlayerAux.x > posPlayer.x) {
-		if (map->collisionMoveRight(posPlayerAux, size)) posPlayerAux.x = posPlayer.x;
+		if (map->collisionMoveRight(posPlayerAux, size, true)) posPlayerAux.x = posPlayer.x;
 	}
 
 	if (posPlayerAux.y > posPlayer.y) {
-		if (map->collisionMoveDown(posPlayerAux, size, &posPlayerAux.y)) posPlayerAux.y = posPlayer.y;
+		if (map->collisionMoveDown(posPlayerAux, size, &posPlayerAux.y, true)) posPlayerAux.y = posPlayer.y;
 	}
 
 	else if (posPlayerAux.y < posPlayer.y) {
-		if (map->collisionMoveUp(posPlayerAux, size, &posPlayerAux.y)) posPlayerAux.y = posPlayer.y;
+		if (map->collisionMoveUp(posPlayerAux, size, &posPlayerAux.y, true)) posPlayerAux.y = posPlayer.y;
 	}
 
 	posPlayer = posPlayerAux;

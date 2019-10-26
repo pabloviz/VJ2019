@@ -30,7 +30,7 @@ void Powerup::update(int deltaTime)
 	sprite->update(deltaTime);
 
 	posPowerup.y += FALL_STEP;
-	map->collisionMoveDown(posPowerup, glm::ivec2(32, 16), &posPowerup.y);
+	map->collisionMoveDown(posPowerup, glm::ivec2(32, 16), &posPowerup.y, false);
 
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPowerup.x), float(tileMapDispl.y + posPowerup.y)));
 }
