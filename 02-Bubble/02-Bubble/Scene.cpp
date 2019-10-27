@@ -74,14 +74,14 @@ void Scene::init(int level) //changed
 		map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram, this);
 		obj = new ObjectMap("levels/obj02.txt"); //TODO: change
 		maxEnemies = obj->getSize();
-		//engine->play2D("sound/level2.mp3");
+		engine->play2D("sound/level2.mp3");
 	}
 	else {
 		map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram, this);
 		map->iniWater(texProgram, glm::ivec2(SCREEN_X, SCREEN_Y));
 		obj = new ObjectMap("levels/obj01.txt");
 		maxEnemies = obj->getSize();
-		//engine->play2D("sound/level1.mp3");
+		engine->play2D("sound/level1.mp3");
 	}
 	for (int i = 0; i < MAX_BULLETS; ++i) bullets.push_back(NULL);
 
