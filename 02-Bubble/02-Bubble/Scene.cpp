@@ -64,9 +64,11 @@ Scene::~Scene()
 void Scene::init(int level) //changed
 {
 	currentlevel = level;
-	if (level == 1 || level == 3) TV = false;
+	/*
+	if (level != 2) TV = false;
 	else TV = true;
-
+	*/
+	TV = (level == 2);
 	initShaders();
 	ticks = 0;
 	posPlayer.x = 0;
@@ -74,6 +76,7 @@ void Scene::init(int level) //changed
 	win = false;
 	angle = 0;
 	engine = irrklang::createIrrKlangDevice();
+
 	if (TV) {
 		map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram, this);
 		obj = new ObjectMap("levels/obj02.txt"); //TODO: change
@@ -81,6 +84,10 @@ void Scene::init(int level) //changed
 		engine->play2D("sound/level2.mp3");
 	}
 	else {
+		if (level == 0) {
+			menu = new Menu;
+			menu->ini(texProgram, this, glm::vec2(SCREEN_X, SCREEN_Y));
+		}
 		if (level == 1) {
 			map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram, this);
 			map->iniWater(texProgram, glm::ivec2(SCREEN_X, SCREEN_Y));
@@ -89,7 +96,7 @@ void Scene::init(int level) //changed
 			maxEnemies = obj->getSize();
 			engine->play2D("sound/level1.mp3");
 		}
-		else {
+		else if (level== 3){
 			map = TileMap::createTileMap("levels/level03.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram, this);
 			map->iniWater(texProgram, glm::ivec2(SCREEN_X, SCREEN_Y));
 			map->iniGate(texProgram, glm::ivec2(211 * 16, 10 * 16));
@@ -101,6 +108,10 @@ void Scene::init(int level) //changed
 			boss->setPosition(glm::vec2(INIT_BOSS_X_TILES * map->getTileSize(), INIT_BOSS_Y_TILES * map->getTileSize()));
 			boss->setTileMap(map);
 		}
+		else if (level == 4) {
+			controls = new Controls;
+			controls->ini(texProgram, this, glm::vec2(SCREEN_X, SCREEN_Y));
+		}
 	}
 	for (int i = 0; i < MAX_BULLETS; ++i) bullets.push_back(NULL);
 
@@ -110,37 +121,37 @@ void Scene::init(int level) //changed
 	}
 
 	currentTime = 0.0f;
-	
-
-	if (!TV) {
-		player = new Player();
-		player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
-		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
-		player->setTileMap(map);
-		player->setLives(PLAYER_LIVES);
-	}
-
-	else {
-		playertv = new PlayerTV();
-		playertv->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this, -(3.14f / 2.f));
-		playertv->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
-		playertv->setTileMap(map);
-		playertv->setLives(PLAYER_LIVES);
+	if (level == 1 || level == 2 || level == 3) {
+		if (!TV) {
+			player = new Player();
+			player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
+			player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
+			player->setTileMap(map);
+			player->setLives(PLAYER_LIVES);
+		}
+		else {
+			playertv = new PlayerTV();
+			playertv->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this, -(3.14f / 2.f));
+			playertv->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
+			playertv->setTileMap(map);
+			playertv->setLives(PLAYER_LIVES);
+		}
 	}
 	
 	//boss = new Boss();
 	//boss->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
 	//boss->setPosition(glm::vec2(20 * map->getTileSize(), 2 * map->getTileSize()));
 	//boss->setTileMap(map);
-
-	powerup = new Powerup();
-	powerup->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
-	powerup->setPosition(glm::vec2(15 * map->getTileSize(), 10 * map->getTileSize()));
-	powerup->setTileMap(map);
-	for (int i = 0; i < PLAYER_LIVES; ++i) {
-		Medalla * medalla = new Medalla();
-		medalla->iniMedalla(glm::ivec2(1 + 16*i,4), texProgram);
-		vides.push_back(medalla);
+	if (level == 1 || level == 2 || level == 3) {
+		powerup = new Powerup();
+		powerup->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
+		powerup->setPosition(glm::vec2(15 * map->getTileSize(), 10 * map->getTileSize()));
+		powerup->setTileMap(map);
+		for (int i = 0; i < PLAYER_LIVES; ++i) {
+			Medalla * medalla = new Medalla();
+			medalla->iniMedalla(glm::ivec2(1 + 16 * i, 4), texProgram);
+			vides.push_back(medalla);
+		}
 	}
 
 	//projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
@@ -157,8 +168,37 @@ void Scene::init(int level) //changed
 }
 
 
+
 void Scene::update(int deltaTime)
 {
+	if (currentlevel == 0) {
+		if (Game::instance().getSpecialKey(101)) menu->changeselected(1);
+		if (Game::instance().getSpecialKey(103)) menu->changeselected(2);
+		if (Game::instance().getKey(13)){
+			if (menu->getselected() == 1) {
+				deleteEntities();
+				init(1);
+			}
+			else if (menu->getselected() == -1) {
+				menu->setposini(5);
+			}
+
+		}
+		if (Game::instance().getKey('c')) {
+			deleteEntities();
+			init(4);
+		}
+		menu->update(deltaTime);
+	}
+	else if (currentlevel == 4) {
+
+		if (Game::instance().getKey('b')) {
+			deleteEntities();
+			init(0);
+		}
+
+		controls->update(deltaTime);
+	}
 	++ticks;
 	currentTime += deltaTime;
 	if (TV) {
@@ -247,35 +287,39 @@ void Scene::render()
 	modelview = glm::translate(modelview, glm::vec3(-(posPlayer.x + 48), -(posPlayer.y + 32), 0.f));
 	texProgram.setUniformMatrix4f("modelview", modelview);
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
-	
-	map->render(posPlayer, angle);
-	map->renderWater(posPlayer, angle);
-	map->renderBridges(posPlayer, angle);
-
-	if(!TV && map->getGatelives())map->renderGate(posPlayer, angle);
-
-	if (boss != NULL) boss->render(posPlayer, angle);
-	map->renderWater(posPlayer, angle);
-	if (player != NULL) player->render(posPlayer, angle);
-	else if (playertv != NULL) playertv->render(posPlayer, angle);
-
-	if (!TV && !map->getGatelives())map->renderGate(posPlayer, angle);
-
-	for (int i = 0; i < maxEnemies; ++i) {
-		if (enemies[i] != NULL) enemies[i]->render(posPlayer, angle);
+	if (map != NULL) {
+		map->render(posPlayer, angle);
+		map->renderWater(posPlayer, angle);
+		map->renderBridges(posPlayer, angle);
 	}
-
-	for (int i = 0; i < MAX_BULLETS; ++i) {
-		if (bullets[i] != NULL) bullets[i]->render(posPlayer, angle);
-	}
-	if (powerup != NULL) powerup->render(posPlayer, angle);
-	int lives;
-	if (TV && playertv != NULL) lives = playertv->getLives();
-	else if (!TV && player != NULL) lives = player->getLives();
-	else lives = 0;
-	for (int i = 0; i < lives; ++i)
-		if (vides[i] != NULL) vides[i]->render();
 	
+	if (currentlevel == 0) menu->render(posPlayer, angle);
+	else if (currentlevel == 4) controls->render(posPlayer, angle);
+	else {
+		if (!TV && map->getGatelives())map->renderGate(posPlayer, angle);
+
+		if (boss != NULL) boss->render(posPlayer, angle);
+		map->renderWater(posPlayer, angle);
+		if (player != NULL) player->render(posPlayer, angle);
+		else if (playertv != NULL) playertv->render(posPlayer, angle);
+
+		if (!TV && !map->getGatelives())map->renderGate(posPlayer, angle);
+
+		for (int i = 0; i < maxEnemies; ++i) {
+			if (enemies[i] != NULL) enemies[i]->render(posPlayer, angle);
+		}
+
+		for (int i = 0; i < MAX_BULLETS; ++i) {
+			if (bullets[i] != NULL) bullets[i]->render(posPlayer, angle);
+		}
+		if (powerup != NULL) powerup->render(posPlayer, angle);
+		int lives;
+		if (TV && playertv != NULL) lives = playertv->getLives();
+		else if (!TV && player != NULL) lives = player->getLives();
+		else lives = 0;
+		for (int i = 0; i < lives; ++i)
+			if (vides[i] != NULL) vides[i]->render();
+	}
 }
 
 void Scene::initShaders()

@@ -15,7 +15,7 @@ void Explosion::init(ShaderProgram& shaderProgram, Scene *scene) {
 	sprite->addKeyframe(0, glm::vec2(0,0));
 	sprite->addKeyframe(0, glm::vec2(0.25,0));
 	sprite->addKeyframe(0, glm::vec2(0.50,0));
-	sprite->addKeyframe(0, glm::vec2(0.75,0));
+	sprite->addKeyframe(0, glm::vec2(0.77,0));
 	sprite->changeAnimation(0);
 
 }

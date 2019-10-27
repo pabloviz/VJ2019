@@ -14,6 +14,8 @@
 #include "Camera.h"
 #include "ObjectMap.h"
 #include "Medalla.h"
+#include "Menu.h"
+#include "Controls.h"
 #include <irrKlang.h>
 #pragma comment(lib, "irrKlang.lib") // link with irrKlang.dll
 
@@ -49,13 +51,9 @@ private:
 	void despawnBullet(int i);
 	void despawnPowerup();
 	void checkPlayerCollisions();
-	
 
 	glm::ivec2 getBulletPos(int i, bool &exists);
-
-
 	bool collides(glm::ivec2 pos1, int width1, int height1, glm::ivec2 pos2, int width2, int height2);
-
 
 private:
 	TileMap *map;
@@ -80,6 +78,8 @@ private:
 	bool TV;
 	float win;
 	irrklang::ISoundEngine* engine;
+	Menu * menu;
+	Controls * controls;
 };
 
 
