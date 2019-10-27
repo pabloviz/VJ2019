@@ -8,8 +8,6 @@
 #include "Sprite.h"
 #include "Bridge.h"
 
-
-
 // Class Tilemap is capable of loading a tile map from a text file in a very
 // simple format (see level01.txt for an example). With this information
 // it builds a single VBO that contains all tiles. As a result the render
@@ -44,7 +42,11 @@ public:
 	void iniBridges(ShaderProgram& shaderProgram, const glm::ivec2& tileMapPos);
 	void renderBridges(glm::vec2 posPlayer, float angle);
 	void updateBridges(int deltaTime, glm::ivec2 posplayer);
-
+	void iniGate(ShaderProgram& shaderProgram, const glm::ivec2& tileMapPos);
+	void renderGate(glm::vec2 posPlayer, float angle);
+	void updateGate(int deltaTime);
+	void decGate();
+	bool getGatelives();
 	
 private:
 	bool loadLevel(const string &levelFile);
@@ -61,6 +63,8 @@ private:
 	int *map;
 	vector<Sprite *> water;
 	vector<vector <Bridge *> > bridges;
+	Sprite *gate;
+	int gate_hp;
 	Scene *scene;
 
 

@@ -8,10 +8,9 @@
 #define SCREEN_X 32
 #define SCREEN_Y 16
 
-#define INIT_PLAYER_X_TILES 4 //200
+#define INIT_PLAYER_X_TILES 200 //4 
 #define INIT_PLAYER_Y_TILES 2
-//#define INIT_PLAYER_X_TILES 0
-//#define INIT_PLAYER_Y_TILES 0
+
 
 #define MAX_BULLETS 40
 
@@ -60,8 +59,8 @@ Scene::~Scene()
 
 void Scene::init() //changed
 {
-	//TV = false;
-	TV = true;
+	TV = false;
+	//TV = true;
 	initShaders();
 	ticks = 0;
 	posPlayer.x = 0;
@@ -75,6 +74,7 @@ void Scene::init() //changed
 	else {
 		map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram, this);
 		map->iniWater(texProgram, glm::ivec2(SCREEN_X, SCREEN_Y));
+		map->iniGate(texProgram, glm::ivec2(211*16, 10*16));
 		obj = new ObjectMap("levels/obj01.txt");
 		maxEnemies = obj->getSize();
 	}
@@ -119,7 +119,7 @@ void Scene::init() //changed
 		vides.push_back(medalla);
 	}
 
-	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
+	//projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
 	
 	camera = new Camera();
 	//camera->setCameraPos(player->getPosPlayer());
@@ -166,6 +166,9 @@ void Scene::update(int deltaTime)
 	if (map != NULL) {
 		map->updateWater(deltaTime);
 		map->updateBridges(deltaTime, posPlayer);
+		map->updateGate(deltaTime);
+		if (map->getGatelives() && player->getPosPlayer().x > 209*16)  player->setPosition(player->getPosPlayer() - glm::vec2(1, 0));
+		else if (!map->getGatelives && player->getPosPlayer().x > 212 * 16) {/*nextlevel*/ ; }
 	}
 	for (int i = 0; i < MAX_BULLETS; ++i) {
 		if (bullets[i] != NULL) {
@@ -216,6 +219,7 @@ void Scene::render()
 	map->render(posPlayer, angle);
 	map->renderWater(posPlayer, angle);
 	map->renderBridges(posPlayer, angle);
+	map->renderGate(posPlayer, angle);
 	if (boss != NULL) boss->render(posPlayer, angle);
 	map->renderWater(posPlayer, angle);
 	if (player != NULL) player->render(posPlayer, angle);
@@ -300,6 +304,13 @@ void Scene::checkEnemyCollisions() {
 						boss->decrementLife();
 					}
 				}
+
+				hit = collides(bulletPos, BULLET_WIDTH, BULLET_HEIGHT, glm::ivec2(210*16 , 9*16 ), 132*16, 32*16);
+				if (hit) {
+					despawnBullet(i);
+					map->decGate();
+				}
+
 			}
 			if (player != NULL && bullets[i] != NULL && bullets[i]->farFromPlayer(posPlayer)) despawnBullet(i);
 			if (playertv != NULL && bullets[i] != NULL && bullets[i]->farFromPlayer(posPlayer)) despawnBullet(i);
