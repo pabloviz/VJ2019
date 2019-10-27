@@ -14,9 +14,8 @@ Controls::~Controls()
 
 }
 
-void Controls::ini(ShaderProgram& shaderProgram, Scene * scene, glm::vec2 offset) {
-
-	tex.loadFromFile("images/controls.png", TEXTURE_PIXEL_FORMAT_RGBA);
+void Controls::ini(ShaderProgram& shaderProgram, Scene * scene, glm::vec2 offset, string image) {
+	tex.loadFromFile(image, TEXTURE_PIXEL_FORMAT_RGBA);
 
 	background = Sprite::createSprite(glm::ivec2(224, 224), glm::vec2(1.0, 1.0), &tex, &shaderProgram, scene);
 	background->setNumberAnimations(1);

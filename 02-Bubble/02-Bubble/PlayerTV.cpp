@@ -60,7 +60,7 @@ void PlayerTV::update(int deltaTime)
 	sprite->update(deltaTime);
 	if (!invulnerable) inv_frames = 0;
 	else ++inv_frames;
-	if (inv_frames >= 200000) invulnerable = false;
+	if (inv_frames >= 200) invulnerable = false;
 
 	air = false;
 	water = false;

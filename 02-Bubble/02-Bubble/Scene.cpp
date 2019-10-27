@@ -110,7 +110,11 @@ void Scene::init(int level) //changed
 		}
 		else if (level == 4) {
 			controls = new Controls;
-			controls->ini(texProgram, this, glm::vec2(SCREEN_X, SCREEN_Y));
+			controls->ini(texProgram, this, glm::vec2(SCREEN_X, SCREEN_Y), "images/controls.png");
+		}
+		else if (level == 5) {
+			credits = new Controls;
+			credits->ini(texProgram, this, glm::vec2(SCREEN_X, SCREEN_Y), "images/credits.png");
 		}
 	}
 	for (int i = 0; i < MAX_BULLETS; ++i) bullets.push_back(NULL);
@@ -171,6 +175,9 @@ void Scene::init(int level) //changed
 
 void Scene::update(int deltaTime)
 {
+	++ticks;
+	currentTime += deltaTime;
+	
 	if (currentlevel == 0) {
 		if (Game::instance().getSpecialKey(101)) menu->changeselected(1);
 		if (Game::instance().getSpecialKey(103)) menu->changeselected(2);
@@ -198,78 +205,81 @@ void Scene::update(int deltaTime)
 		}
 
 		controls->update(deltaTime);
+	}else if (currentlevel == 5) {
+		credits->update(deltaTime);
 	}
-	++ticks;
-	currentTime += deltaTime;
-	if (TV) {
-		if (Game::instance().getKey('a')) {
-			angle -= 0.1f;
-			render();
-		}
-		else if (Game::instance().getKey('s')) {
-			angle += 0.1f;
-			render();
-		}
-	}
-	if (player != NULL) {
-		posPlayer = player->getPosPlayer();
-		player->update(deltaTime);
-	}
-	if (playertv != NULL) {
-		posPlayer = playertv->getPosPlayer();
-		playertv->update(deltaTime);
-	}
-	if (powerup != NULL) powerup->update(deltaTime);
-	if (boss != NULL) boss->update(deltaTime);
+	else {
 
-	if (ticks % 2 == 0)
-		if (camera != NULL && (player != NULL || playertv != NULL)) {
-			camera->update(deltaTime, posPlayer);
-			for (int i = 0; i < PLAYER_LIVES; ++i)
-				if (vides[i] != NULL) vides[i]->setPos(camera->getCameraPos());
-		}
-
-	if (map != NULL) {
-		map->updateWater(deltaTime);
-		map->updateBridges(deltaTime, posPlayer);
-		if (!TV && player != NULL) {
-			map->updateGate(deltaTime);
-			if (map->getGatelives() && player->getPosPlayer().x > 209 * 16)  player->setPosition(player->getPosPlayer() - glm::vec2(1, 0));
-			else if (!(map->getGatelives()) && player->getPosPlayer().x > 212 * 16) { win = 1; }
-		}
-	}
-	for (int i = 0; i < MAX_BULLETS; ++i) {
-		if (bullets[i] != NULL) {
-			bullets[i]->update(deltaTime);
-		}
-	}
-	bool enemiesRemain = false;
-	for (int i = 0; i < maxEnemies; ++i) {
-		if (spawnedEnemies[i] == false) {
-			glm::vec2 posEnemy = obj->getEnemyPos(i);
-			posEnemy.x *= TILE_SIZE;
-			posEnemy.y *= TILE_SIZE;
-			if (posPlayer.x >= posEnemy.x - (TILE_SIZE * 15)) {
-				spawnedEnemies[i] = true;
-				enemies[i] = new Enemy();
-				enemies[i]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, obj->getEnemyType(i), this, i);
-				enemies[i]->setPosition(posEnemy);
-				enemies[i]->setTileMap(map);
+		if (TV) {
+			if (Game::instance().getKey('a')) {
+				angle -= 0.1f;
+				render();
 			}
-			
+			else if (Game::instance().getKey('s')) {
+				angle += 0.1f;
+				render();
+			}
 		}
-		if (enemies[i] != NULL) enemies[i]->update(deltaTime);
-		if (!spawnedEnemies[i] || enemies[i] != NULL) {
-			enemiesRemain = true;
+		if (player != NULL) {
+			posPlayer = player->getPosPlayer();
+			player->update(deltaTime);
 		}
-	}
-	if (!win && !enemiesRemain && TV) win = true; // level 2 win condition, if everyone is dead
-	checkEnemyCollisions();
-	if (!TV && player != NULL && !player->getInvulnerable()) checkPlayerCollisions();
-	if (TV && playertv != NULL && !playertv->getInvulnerable()) checkPlayerCollisions();
-	if (win) {
-		deleteEntities();
-		init(++currentlevel);
+		if (playertv != NULL) {
+			posPlayer = playertv->getPosPlayer();
+			playertv->update(deltaTime);
+		}
+		if (powerup != NULL) powerup->update(deltaTime);
+		if (boss != NULL) boss->update(deltaTime);
+
+		if (ticks % 2 == 0)
+			if (camera != NULL && (player != NULL || playertv != NULL)) {
+				camera->update(deltaTime, posPlayer);
+				for (int i = 0; i < PLAYER_LIVES; ++i)
+					if (vides[i] != NULL) vides[i]->setPos(camera->getCameraPos());
+			}
+
+		if (map != NULL) {
+			map->updateWater(deltaTime);
+			map->updateBridges(deltaTime, posPlayer);
+			if (!TV && player != NULL) {
+				map->updateGate(deltaTime);
+				if (map->getGatelives() && player->getPosPlayer().x > 209 * 16)  player->setPosition(player->getPosPlayer() - glm::vec2(1, 0));
+				else if (!(map->getGatelives()) && player->getPosPlayer().x > 212 * 16) { win = 1; }
+			}
+		}
+		for (int i = 0; i < MAX_BULLETS; ++i) {
+			if (bullets[i] != NULL) {
+				bullets[i]->update(deltaTime);
+			}
+		}
+		bool enemiesRemain = false;
+		for (int i = 0; i < maxEnemies; ++i) {
+			if (spawnedEnemies[i] == false) {
+				glm::vec2 posEnemy = obj->getEnemyPos(i);
+				posEnemy.x *= TILE_SIZE;
+				posEnemy.y *= TILE_SIZE;
+				if (posPlayer.x >= posEnemy.x - (TILE_SIZE * 15)) {
+					spawnedEnemies[i] = true;
+					enemies[i] = new Enemy();
+					enemies[i]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, obj->getEnemyType(i), this, i);
+					enemies[i]->setPosition(posEnemy);
+					enemies[i]->setTileMap(map);
+				}
+
+			}
+			if (enemies[i] != NULL) enemies[i]->update(deltaTime);
+			if (!spawnedEnemies[i] || enemies[i] != NULL) {
+				enemiesRemain = true;
+			}
+		}
+		if (!win && !enemiesRemain && TV) win = true; // level 2 win condition, if everyone is dead
+		checkEnemyCollisions();
+		if (!TV && player != NULL && !player->getInvulnerable()) checkPlayerCollisions();
+		if (TV && playertv != NULL && !playertv->getInvulnerable()) checkPlayerCollisions();
+		if (win) {
+			deleteEntities();
+			init(++currentlevel);
+		}
 	}
 }
 
@@ -295,6 +305,7 @@ void Scene::render()
 	
 	if (currentlevel == 0) menu->render(posPlayer, angle);
 	else if (currentlevel == 4) controls->render(posPlayer, angle);
+	else if (currentlevel == 5) credits->render(posPlayer, angle);
 	else {
 		if (!TV && map->getGatelives())map->renderGate(posPlayer, angle);
 

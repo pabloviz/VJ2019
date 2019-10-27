@@ -80,6 +80,7 @@ private:
 	irrklang::ISoundEngine* engine;
 	Menu * menu;
 	Controls * controls;
+	Controls * credits;
 };
 
 
