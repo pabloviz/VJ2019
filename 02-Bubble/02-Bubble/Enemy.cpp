@@ -1,3 +1,4 @@
+
 #include <cmath>
 #include <iostream>
 #include <GL/glew.h>
@@ -224,7 +225,7 @@ void Enemy::update(int deltaTime)
 
 void Enemy::updateDeath() {
 	deathTicks++;
-	if (deathTicks <= 30) posEnemy.y -= 2;
+	if (!TV && deathTicks <= 30) posEnemy.y -= 2;
 	else if (sprite->animation() != EXPLODE) sprite->changeAnimation(EXPLODE);
 	if (deathTicks >= 70) scene->enemyDeath(this->id);
 	else sprite->setPosition(glm::vec2(float(tileMapDispl.x + posEnemy.x), float(tileMapDispl.y + posEnemy.y)));

@@ -14,6 +14,8 @@
 #include "Camera.h"
 #include "ObjectMap.h"
 #include "Medalla.h"
+#include <irrKlang.h>
+#pragma comment(lib, "irrKlang.lib") // link with irrKlang.dll
 
 // Scene contains all the entities of our game.
 // It is responsible for updating and render them.
@@ -26,7 +28,7 @@ public:
 	Scene();
 	~Scene();
 
-	void init();
+	void init(int level);
 	void update(int deltaTime);
 	void render();
 	void addBullet(float angle, glm::vec2 posBullet, bool friendly);
@@ -37,6 +39,7 @@ public:
 	void bossDeath();
 	void spawnEnemy(glm::ivec2 posSpawn, int type);
 	float getAngle();
+	void deleteEntities();
 
 private:
 	void initShaders();
@@ -73,6 +76,7 @@ private:
 	glm::vec2 posPlayer;
 	bool TV;
 	float win;
+	irrklang::ISoundEngine* engine;
 };
 
 

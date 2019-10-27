@@ -34,6 +34,7 @@
 
 #define TILE_SIZE 16
 
+
 enum EnemyType
 {
 	RUNNING, SHOOTING, TURRET, CHASE
@@ -58,25 +59,29 @@ Scene::~Scene()
 }
 
 
-void Scene::init() //changed
+void Scene::init(int level) //changed
 {
-	//TV = false;
-	TV = true;
+	if (level == 1) TV = false;
+	else TV = true;
 	initShaders();
 	ticks = 0;
 	posPlayer.x = 0;
 	posPlayer.y = 0;
 	win = false;
+	angle = 0;
+	engine = irrklang::createIrrKlangDevice();
 	if (TV) {
 		map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram, this);
-		obj = new ObjectMap("levels/obj01.txt"); //TODO: change
+		obj = new ObjectMap("levels/obj02.txt"); //TODO: change
 		maxEnemies = obj->getSize();
+		//engine->play2D("sound/level2.mp3");
 	}
 	else {
 		map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram, this);
 		map->iniWater(texProgram, glm::ivec2(SCREEN_X, SCREEN_Y));
 		obj = new ObjectMap("levels/obj01.txt");
 		maxEnemies = obj->getSize();
+		//engine->play2D("sound/level1.mp3");
 	}
 	for (int i = 0; i < MAX_BULLETS; ++i) bullets.push_back(NULL);
 
@@ -162,7 +167,6 @@ void Scene::update(int deltaTime)
 				if (vides[i] != NULL) vides[i]->setPos(camera->getCameraPos());
 		}
 
-	if (enemies[0] != NULL) enemies[0]->update(deltaTime);
 	if (map != NULL) {
 		map->updateWater(deltaTime);
 		map->updateBridges(deltaTime, posPlayer);
@@ -188,14 +192,18 @@ void Scene::update(int deltaTime)
 			
 		}
 		if (enemies[i] != NULL) enemies[i]->update(deltaTime);
-		if (!spawnedEnemies[i] || enemies[i] != NULL) enemiesRemain = true;
+		if (!spawnedEnemies[i] || enemies[i] != NULL) {
+			enemiesRemain = true;
+		}
 	}
 	if (!win && !enemiesRemain && TV) win = true; // level 2 win condition, if everyone is dead
 	checkEnemyCollisions();
 	if (!TV && player != NULL && !player->getInvulnerable()) checkPlayerCollisions();
 	if (TV && playertv != NULL && !playertv->getInvulnerable()) checkPlayerCollisions();
-	if (win) exit(1);
-
+	if (win) {
+		deleteEntities();
+		init(1);
+	}
 }
 
 void Scene::render()
@@ -284,6 +292,8 @@ void Scene::checkEnemyCollisions() {
 						if (hit) {
 							despawnBullet(i);
 							enemies[j]->setDying(true);
+							engine->play2D("sound/explode.wav");
+
 						}
 					}
 				}
@@ -393,7 +403,7 @@ void Scene::addBullet (float angle, glm::vec2 posBullet, bool friendly) {
 			bullets[i]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, angle, posBullet, friendly, this);
 			angle += 0.436;
 			--stop;
-
+			if (stop == 0) engine->play2D("sound/fire.wav");
 		}
 	}
 }
@@ -416,6 +426,7 @@ void Scene::despawnBullet(int i) {
 void Scene::despawnPowerup() {
 	delete powerup;
 	powerup = NULL;
+	engine->play2D("sound/powerup.wav");
 }
 
 glm::ivec2 Scene::getPosPlayer() {
@@ -433,6 +444,7 @@ void Scene::playerDeath() {
 		delete playertv;
 		playertv = NULL;
 	}
+	engine->play2D("sound/explode.wav");
 }
 
 void Scene::enemyDeath(int id) {
@@ -473,4 +485,42 @@ void Scene::spawnEnemy(glm::ivec2 posSpawn, int type) {
 
 float Scene::getAngle() {
 	return angle;
+}
+
+void Scene::deleteEntities() {
+	if (map != NULL)
+		delete map;
+	if (player != NULL)
+		delete player;
+	if (playertv != NULL)
+		delete playertv;
+
+	for (int i = maxEnemies-1; i >=0; --i) {
+		if (enemies[i] != NULL) {
+			delete enemies[i];
+			enemies[i] = NULL;
+			enemies.pop_back();
+		}
+		spawnedEnemies.pop_back();
+	}
+	for (int i = vides.size() - 1; i >= 0; --i) {
+		delete vides[i];
+		vides[i] = NULL;
+		vides.pop_back();
+	}
+	for (int i = bullets.size() - 1; i >= 0; --i) {
+		delete bullets[i];
+		bullets[i] = NULL;
+		bullets.pop_back();
+	}
+	if (powerup != NULL) delete powerup;
+	map = NULL;
+	player = NULL;
+	playertv = NULL;
+	boss = NULL;
+	delete engine;
+	engine = NULL;
+	powerup = NULL;
+	delete camera;
+	camera = NULL;
 }

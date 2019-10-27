@@ -7,11 +7,20 @@ void Game::init()
 {
 	bPlay = true;
 	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-	scene.init();
+	scene.init(1);
 }
 
 bool Game::update(int deltaTime)
 {
+	if (getKey('1')) {
+		scene.deleteEntities();
+		scene.init(1);
+	}
+
+	if (getKey('2')) {
+		scene.deleteEntities();
+		scene.init(2);
+	}
 	scene.update(deltaTime);
 	
 	return bPlay;
