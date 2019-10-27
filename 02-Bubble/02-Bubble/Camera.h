@@ -10,6 +10,7 @@ public:
 	void setCameraPos(glm::ivec2 newpos);
 	glm::ivec2 getCameraPos();
 	void setTV(bool TV);
+	void setScroll(bool scroll);
 
 private:
 	void rotateCamera(float angle);
@@ -17,6 +18,7 @@ private:
 	glm::ivec2 posCamera;
 	float angle = 0.f;
 	bool TV;
+	bool scroll;
 	//float CameraXspeed, CameraYSpeed;
 
 };

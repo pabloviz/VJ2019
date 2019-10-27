@@ -8,8 +8,11 @@
 #define SCREEN_X 32
 #define SCREEN_Y 16
 
-#define INIT_PLAYER_X_TILES 200 //4 
+#define INIT_PLAYER_X_TILES 4 //4 
 #define INIT_PLAYER_Y_TILES 2
+
+#define INIT_BOSS_X_TILES 6 //4 
+#define INIT_BOSS_Y_TILES 0
 
 
 #define MAX_BULLETS 40
@@ -61,7 +64,7 @@ Scene::~Scene()
 void Scene::init(int level) //changed
 {
 	currentlevel = level;
-	if (level == 1) TV = false;
+	if (level == 1 || level == 3) TV = false;
 	else TV = true;
 
 	initShaders();
@@ -78,12 +81,26 @@ void Scene::init(int level) //changed
 		engine->play2D("sound/level2.mp3");
 	}
 	else {
-		map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram, this);
-		map->iniWater(texProgram, glm::ivec2(SCREEN_X, SCREEN_Y));
-		map->iniGate(texProgram, glm::ivec2(211*16, 10*16));
-		obj = new ObjectMap("levels/obj01.txt");
-		maxEnemies = obj->getSize();
-		engine->play2D("sound/level1.mp3");
+		if (level == 1) {
+			map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram, this);
+			map->iniWater(texProgram, glm::ivec2(SCREEN_X, SCREEN_Y));
+			map->iniGate(texProgram, glm::ivec2(211 * 16, 10 * 16));
+			obj = new ObjectMap("levels/obj01.txt");
+			maxEnemies = obj->getSize();
+			engine->play2D("sound/level1.mp3");
+		}
+		else {
+			map = TileMap::createTileMap("levels/level03.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram, this);
+			map->iniWater(texProgram, glm::ivec2(SCREEN_X, SCREEN_Y));
+			map->iniGate(texProgram, glm::ivec2(211 * 16, 10 * 16));
+			obj = new ObjectMap("levels/obj03.txt");
+			maxEnemies = obj->getSize();
+			engine->play2D("sound/level3.mp3");
+			boss = new Boss();
+			boss->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
+			boss->setPosition(glm::vec2(INIT_BOSS_X_TILES * map->getTileSize(), INIT_BOSS_Y_TILES * map->getTileSize()));
+			boss->setTileMap(map);
+		}
 	}
 	for (int i = 0; i < MAX_BULLETS; ++i) bullets.push_back(NULL);
 
@@ -110,7 +127,7 @@ void Scene::init(int level) //changed
 		playertv->setTileMap(map);
 		playertv->setLives(PLAYER_LIVES);
 	}
-
+	
 	//boss = new Boss();
 	//boss->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
 	//boss->setPosition(glm::vec2(20 * map->getTileSize(), 2 * map->getTileSize()));
@@ -132,6 +149,8 @@ void Scene::init(int level) //changed
 	//camera->setCameraPos(player->getPosPlayer());
 	camera->setCameraPos(glm::ivec2(SCREEN_X, SCREEN_Y));
 	camera->setTV(TV);
+	if (level == 3) camera->setScroll(false);
+	else camera->setScroll(true);
 	projection = camera->calcProj();
 	//projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1 + 100), float(SCREEN_HEIGHT - 1), 0.f);
 	
@@ -173,7 +192,7 @@ void Scene::update(int deltaTime)
 	if (map != NULL) {
 		map->updateWater(deltaTime);
 		map->updateBridges(deltaTime, posPlayer);
-		if (!TV) {
+		if (!TV && player != NULL) {
 			map->updateGate(deltaTime);
 			if (map->getGatelives() && player->getPosPlayer().x > 209 * 16)  player->setPosition(player->getPosPlayer() - glm::vec2(1, 0));
 			else if (!(map->getGatelives()) && player->getPosPlayer().x > 212 * 16) { win = 1; }
@@ -479,7 +498,8 @@ void Scene::bossDeath() {
 }
 
 void Scene::playerRespawn() { //changed
-	glm::vec2 posPlayer = player->getPosPlayer();
+	if (player != NULL) posPlayer = player->getPosPlayer();
+	else posPlayer = playertv->getPosPlayer();
 
 	if (!TV) {
 		posPlayer.y = 0;
@@ -487,7 +507,9 @@ void Scene::playerRespawn() { //changed
 	}
 
 	if (TV) playertv->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this, playertv->getAngle());
+	if (player != NULL)
 	player->setPosition(posPlayer);
+	else playertv->setPosition(posPlayer);
 
 }
 
@@ -544,4 +566,12 @@ void Scene::deleteEntities() {
 	powerup = NULL;
 	delete camera;
 	camera = NULL;
+}
+
+bool Scene::getTV() {
+	return TV;
+}
+
+int Scene::getLevel() {
+	return currentlevel;
 }
