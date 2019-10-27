@@ -74,6 +74,7 @@ private:
 	vector<Medalla*> vides;
 	float angle;
 	glm::vec2 posPlayer;
+	int currentlevel;
 	bool TV;
 	float win;
 	irrklang::ISoundEngine* engine;

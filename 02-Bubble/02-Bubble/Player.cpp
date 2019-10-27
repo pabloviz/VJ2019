@@ -264,7 +264,8 @@ void Player::update(int deltaTime) //changed
 		glm::ivec2 posAux = posPlayer;
 		posAux.y += 32;
 		if (!crouch && !(water && map->collisionMoveRight(posAux, glm::ivec2(32, 16),false))) {
-			posPlayer.x += 0.75;
+			if (!map->collisionMoveRight(posAux, glm::ivec2(32, 16), false))
+				posPlayer.x += 0.75;
 			
 		}
 	}

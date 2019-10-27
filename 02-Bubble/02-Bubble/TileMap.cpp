@@ -18,6 +18,7 @@ TileMap *TileMap::createTileMap(const string &levelFile, const glm::vec2 &minCoo
 
 TileMap::TileMap(const string &levelFile, const glm::vec2 &minCoords, ShaderProgram &program, Scene *scene)
 {
+	gate = NULL;
 	this->scene = scene;
 	loadLevel(levelFile);
 	prepareArrays(minCoords, program);
@@ -237,6 +238,58 @@ void TileMap::renderBridges(glm::vec2 posPlayer, float angle) {
 		}
 	}
 }
+
+void TileMap::iniGate(ShaderProgram& shaderProgram, const glm::ivec2& tileMapPos) {
+
+	gate_hp = 5;
+	gate = Sprite::createSprite(glm::ivec2(112, 48), glm::vec2(0.0625f*7, 0.0625f*3), &tilesheet, &shaderProgram, scene);
+	gate->setNumberAnimations(2);
+	gate->setAnimationSpeed(0, 1);
+	gate->addKeyframe(0, glm::vec2(float((208) % 16) / tilesheetSize.x, float((208) / 16) / tilesheetSize.y));
+	gate->setAnimationSpeed(1, 1);
+	gate->addKeyframe(1, glm::vec2(float((135) % 16) / tilesheetSize.x, float((135) / 16) / tilesheetSize.y));
+	gate->changeAnimation(0);
+
+	gate->setPosition(tileMapPos);
+	/*map[13* mapSize.x + 210] = 256;
+	map[12 * mapSize.x + 210] = 256;
+	map[11 * mapSize.x + 210] = 256;
+	map[10 * mapSize.x + 210] = 256;
+	map[9 * mapSize.x + 210] = 256;
+	map[8 * mapSize.x + 210] = 256;
+	map[7 * mapSize.x + 210] = 256;
+	map[6 * mapSize.x + 210] = 256;*/
+
+
+
+}
+void TileMap::renderGate(glm::vec2 posPlayer, float angle) {
+	if (gate == NULL) return;
+	gate->render(posPlayer, angle);
+}
+void TileMap::updateGate(int deltaTime) {
+	if (gate == NULL) return;
+	gate->update(deltaTime);
+}
+void TileMap::decGate() {
+	--gate_hp; 
+	if (gate_hp == 0) {
+		gate->changeAnimation(1);
+		map[12 * mapSize.x + 212] = 0;
+		map[12 * mapSize.x + 213] = 0;
+
+	}
+}
+bool TileMap::getGatelives() {
+	return (gate_hp>0);
+}
+
+
+
+
+
+
+
 
 // Collision tests for axis aligned bounding boxes.
 // Method collisionMoveDown also corrects Y coordinate if the box is
