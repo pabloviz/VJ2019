@@ -22,6 +22,10 @@ bool Game::update(int deltaTime)
 		scene.deleteEntities();
 		scene.init(2);
 	}
+	if (getKey('3')) {
+		scene.deleteEntities();
+		scene.init(3);
+	}
 	scene.update(deltaTime);
 	
 	return bPlay;

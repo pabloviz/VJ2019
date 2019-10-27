@@ -17,7 +17,7 @@ void Camera::update(int deltaTime, glm::ivec2 posplayer) {
 	if (!TV) posplayer.x += 1.5*TMP_PLAYER_WIDTH;
 	else posplayer.x += TMP_PLAYER_WIDTH;
 	int diff = posplayer.x - posCamera.x;
-	if (diff > CAMERA_WIDTH / 2 && (216 * 16 - posCamera.x) >= CAMERA_WIDTH) {
+	if (scroll && diff > CAMERA_WIDTH / 2 && (216 * 16 - posCamera.x) >= CAMERA_WIDTH) {
 		posCamera.x = posplayer.x - CAMERA_WIDTH / 2;
 	}
 	if (this->TV) {
@@ -47,4 +47,8 @@ void Camera::rotateCamera(float angle) {
 
 void Camera::setTV(bool TV) {
 	this->TV = TV;
+}
+
+void Camera::setScroll(bool scroll) {
+	this->scroll = scroll;
 }

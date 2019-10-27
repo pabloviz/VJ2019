@@ -238,7 +238,7 @@ void Player::update(int deltaTime) //changed
 		glm::vec2 posAux = posPlayer;
 		posAux.y += 32;
 		if (!crouch && !(water && map->collisionMoveLeft(posAux, glm::ivec2(32, 16), false))) {
-			posPlayer.x -= 0.75;
+			if (posPlayer.x >= 0.5f) posPlayer.x -= 0.75;
 			
 		}
 	}
@@ -265,7 +265,7 @@ void Player::update(int deltaTime) //changed
 		posAux.y += 32;
 		if (!crouch && !(water && map->collisionMoveRight(posAux, glm::ivec2(32, 16),false))) {
 			if (!map->collisionMoveRight(posAux, glm::ivec2(32, 16), false))
-				posPlayer.x += 0.75;
+				if (!(scene->getLevel() == 3 && posPlayer.x > 12 * 16)) posPlayer.x += 0.75;
 			
 		}
 	}
@@ -309,8 +309,9 @@ void Player::update_death() { //changed
 		bJumping = true;
 		jumpAngle = 0;
 		startY = posPlayer.y;
+		deathTicks = 0;
 	}
-
+	++deathTicks;
 	bool dead = false;
 
 	if (bJumping)
@@ -331,7 +332,8 @@ void Player::update_death() { //changed
 	else
 	{
 		posPlayer.y += FALL_STEP;
-		if (map->collisionMoveDown(posPlayer, glm::ivec2(32, 48), &posPlayer.y, false)) {
+		map->collisionMoveDown(posPlayer, glm::ivec2(32, 48), &posPlayer.y, false);
+		if (deathTicks >= 55) {
 			--lives;
 			if (lives <= 0) {
 				//0 vides
@@ -346,7 +348,7 @@ void Player::update_death() { //changed
 	}
 
 	if (!dead) {
-		posPlayer.x -= 2;
+		if (bJumping && posPlayer.x >= 2.1f) posPlayer.x -= 2;
 		if (map->collisionMoveLeft(posPlayer, glm::ivec2(32, 32), false))
 		{
 			posPlayer.x += 2;
@@ -414,21 +416,25 @@ void Player::fireBullet() {
 		if (sprite->animation() == CROUCH_LEFT) direction.x = -3;
 		else direction.x = 3;
 	}
-	
-	if (sprite->animation() == STAND_RIGHT || sprite->animation() == MOVE_RIGHT || sprite->animation() == MOVE_RIGHT_DOWN ||
-		sprite->animation() == MOVE_RIGHT_UP || sprite->animation() == JUMP_RIGHT || sprite->animation() == CROUCH_RIGHT ||
-		sprite->animation() == SWIM_RIGHT)
-		reverse = true;
-
-	angle = -atan(direction.y / direction.x) + (reverse * 3.14f);
 	glm::ivec2 bulletSpawn = posPlayer;
 	bulletSpawn.y += 16;
+	if (sprite->animation() == STAND_RIGHT || sprite->animation() == MOVE_RIGHT || sprite->animation() == MOVE_RIGHT_DOWN ||
+		sprite->animation() == MOVE_RIGHT_UP || sprite->animation() == JUMP_RIGHT || sprite->animation() == CROUCH_RIGHT ||
+		sprite->animation() == SWIM_RIGHT || sprite->animation() == STAND_RIGHT_UP) {
+		reverse = true;
+		bulletSpawn.x += 26;
+	}
+	else bulletSpawn.x += 2;
+	angle = -atan(direction.y / direction.x) + (reverse * 3.14f);
+	
 	if (crouch || water) bulletSpawn.y += 16;
+	if (sprite->animation() == STAND_LEFT_UP || sprite->animation() == STAND_RIGHT_UP) bulletSpawn.y -= 16;
 	scene->addBullet(angle, bulletSpawn, true);
 }
 
 
 glm::vec2 Player::getPosPlayer() {
+
 	return posPlayer;
 }
 

@@ -40,6 +40,8 @@ public:
 	void spawnEnemy(glm::ivec2 posSpawn, int type);
 	float getAngle();
 	void deleteEntities();
+	bool getTV();
+	int getLevel();
 
 private:
 	void initShaders();

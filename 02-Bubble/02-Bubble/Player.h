@@ -53,6 +53,7 @@ private:
 	float startY;
 
 	int lives;
+	int deathTicks;
 	Texture spritesheet;
 	Sprite *sprite;
 	TileMap *map;
