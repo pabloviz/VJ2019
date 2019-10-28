@@ -10,7 +10,7 @@ public:
 	Medalla();
 	~Medalla();
 
-	void iniMedalla(glm::ivec2 offset, ShaderProgram& shaderProgram);
+	void iniMedalla(glm::ivec2 offset, ShaderProgram& shaderProgram, string textu);
 	void Medalla::setPos(glm::vec2 newpos);
 	void render();
 

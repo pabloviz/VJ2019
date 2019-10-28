@@ -33,6 +33,8 @@ public:
 	int animation() const;
 	
 	void setPosition(const glm::vec2 &pos);
+	void changeTexture(string newtext);
+	void changeAlfa(float newalfa);
 
 private:
 	Texture *texture;
@@ -46,6 +48,7 @@ private:
 	glm::vec2 texCoordDispl;
 	vector<AnimKeyframes> animations;
 	Scene *scene;
+	float alfa;
 };
 
 

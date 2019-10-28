@@ -102,6 +102,10 @@ int main(int argc, char **argv)
 	// GLEW will take care of OpenGL extension functions
 	glewExperimental = GL_TRUE;
 	glewInit();
+
+	// Added by PABLO
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	// Game instance initialization
 	Game::instance().init();

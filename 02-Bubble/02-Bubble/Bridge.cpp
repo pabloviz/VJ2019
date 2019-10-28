@@ -45,7 +45,7 @@ void Bridge::init(ShaderProgram& shaderProgram, int tile, int sizex, int sizey, 
 	lower->changeAnimation(0);
 }
 void Bridge::setDestroy(int type) {
-	if (delay == 40) {
+	if (delay == 50) {
 		Explosion* e = new Explosion();
 		e->init(program, scene);
 		e->setPos(glm::vec2(posBridge.x,posBridge.y - type*8));
@@ -57,7 +57,7 @@ void Bridge::setDestroy(int type) {
 		exp.push_back(e);
 	}
 	destroy = true;
-	if (delay == 40) {
+	if (delay == 50) {
 		sprite->changeAnimation(type); //rumble
 		lower->changeAnimation(1);
 	}

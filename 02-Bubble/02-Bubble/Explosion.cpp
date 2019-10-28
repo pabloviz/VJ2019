@@ -3,6 +3,7 @@
 Explosion::Explosion() {
 	sprite = NULL;
 	posExplosion = glm::vec2(0, 0);
+	timer = 40 + rand() % 16;
 }
 
 void Explosion::init(ShaderProgram& shaderProgram, Scene *scene) {
@@ -11,7 +12,7 @@ void Explosion::init(ShaderProgram& shaderProgram, Scene *scene) {
 
 	sprite = Sprite::createSprite(glm::ivec2(32, 32), glm::vec2(0.25, 1.0), &tilesheet, &shaderProgram, scene);
 	sprite->setNumberAnimations(1);
-	sprite->setAnimationSpeed(0, 5);
+	sprite->setAnimationSpeed(0, timer/8);
 	sprite->addKeyframe(0, glm::vec2(0,0));
 	sprite->addKeyframe(0, glm::vec2(0.25,0));
 	sprite->addKeyframe(0, glm::vec2(0.50,0));
@@ -30,6 +31,9 @@ void Explosion::updateExplosion(int deltaTime) {
 	sprite->update(deltaTime);
 }
 void Explosion::renderExplosion(glm::vec2 posPlayer, float angle) {
-	sprite->render(posPlayer, angle);
+	if (timer > 0) {
+		sprite->render(posPlayer, angle);
+		--timer;
+	}
 }
 

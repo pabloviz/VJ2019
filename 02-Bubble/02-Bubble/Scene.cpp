@@ -159,10 +159,15 @@ void Scene::init(int level) //changed
 				powerups[i]->setPosition(glm::vec2((15 + 5*i) * map->getTileSize(), 10 * map->getTileSize()));
 				powerups[i]->setTileMap(map);
 			}
+			camouflage_icon = new Medalla(); camouflage_icon->iniMedalla(glm::ivec2(1 + 16*0, 20), texProgram, "images/camouflage.png");
+			player_speed_icon = new Medalla(); player_speed_icon->iniMedalla(glm::ivec2(1 + 16 * 1, 20), texProgram, "images/player_speed.png");
+			bullet_speed_icon = new Medalla(); bullet_speed_icon->iniMedalla(glm::ivec2(1 + 16 * 2, 20), texProgram, "images/bullet_speed.png");
+			camouflage_available = player_speed_available = bullet_speed_available = false;
+
 		}
 		for (int i = 0; i < PLAYER_LIVES; ++i) {
 			Medalla * medalla = new Medalla();
-			medalla->iniMedalla(glm::ivec2(1 + 16 * i, 4), texProgram);
+			medalla->iniMedalla(glm::ivec2(1 + 16 * i, 4), texProgram, "images/medalla.png");
 			vides.push_back(medalla);
 		}
 	}
@@ -247,6 +252,9 @@ void Scene::update(int deltaTime)
 				camera->update(deltaTime, posPlayer);
 				for (int i = 0; i < PLAYER_LIVES; ++i)
 					if (vides[i] != NULL) vides[i]->setPos(camera->getCameraPos());
+				if (camouflage_icon != NULL) camouflage_icon->setPos(camera->getCameraPos());
+				if (player_speed_icon != NULL) player_speed_icon->setPos(camera->getCameraPos());
+				if (bullet_speed_icon != NULL) bullet_speed_icon->setPos(camera->getCameraPos());
 			}
 
 		if (map != NULL) {
@@ -346,6 +354,9 @@ void Scene::render()
 		else lives = 0;
 		for (int i = 0; i < lives; ++i)
 			if (vides[i] != NULL) vides[i]->render();
+		if (camouflage_icon != NULL && camouflage_available) camouflage_icon->render();
+		if (player_speed_icon != NULL && player_speed_available) player_speed_icon->render();
+		if (bullet_speed_icon != NULL && bullet_speed_available) bullet_speed_icon->render();
 	}
 }
 
@@ -419,7 +430,7 @@ void Scene::checkEnemyCollisions() {
 				hit = collides(bulletPos, BULLET_WIDTH, BULLET_HEIGHT, glm::ivec2(210*16 , 9*16 ), 132*16, 32*16);
 				if (hit) {
 					despawnBullet(i);
-					map->decGate();
+					map->decGate(texProgram, this);
 				}
 
 			}
@@ -480,17 +491,23 @@ void Scene::checkPlayerCollisions() {
 			hit = collides(powerupPos, POWERUP_WIDTH, POWERUP_HEIGHT,
 				posPlayer, PLAYER_WIDTH, PLAYER_HEIGHT);
 			if (hit) {
+				//NOTA PEL GERARD: EL setCamouflage, setBulletSpeed I TAL NOMES S'HA DE PODER ACTIVAR SI L'USUARI TOCA UNA TECLA ("Q W E", PER EXEMPLE) I EL TE AVAILABLE. LLAVORS ES POSA UNAVAILABLE
 				if (powerups[i]->getType() == 0) {
 					if (!TV)player->setSpread(true);
 				}
 				if (powerups[i]->getType() == 1) {
-					if (!TV)player->setFastBullets(true);
+					//if (!TV)player->setFastBullets(true);
+					bullet_speed_available = true;
 				}
 				if (powerups[i]->getType() == 2) {
-					if (!TV)player->setCamouflage(true);
+					if (!TV) {
+						//player->setCamouflage(true);
+						camouflage_available = true;
+					}
 				}
 				if (powerups[i]->getType() == 3) {
-					if (!TV)player->setSpeed(true);
+					//if (!TV)player->setSpeed(true);
+					player_speed_available = true;
 				}
 				despawnPowerup(i);
 			}

@@ -159,6 +159,8 @@ void Player::update(int deltaTime) //changed
 		if (camouflageFrames >= 200) {
 			camouflageFrames = 0;
 			camouflage = false;
+			sprite->changeTexture("images/contraspritesheet.png");
+			sprite->changeAlfa(1.0f);
 		}
 	}
 
@@ -520,6 +522,8 @@ void Player::setSpeed(bool speed) {
 
 void Player::setCamouflage(bool camouflage) {
 	this->camouflage = camouflage;
+	sprite->changeTexture("images/contraspritesheet-camouflage.png");
+	sprite->changeAlfa(0.7f);
 }
 
 void Player::setFastBullets(bool fastBullets) {

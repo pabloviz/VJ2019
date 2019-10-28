@@ -11,7 +11,6 @@ using namespace std;
 TileMap *TileMap::createTileMap(const string &levelFile, const glm::vec2 &minCoords, ShaderProgram &program, Scene *scene)
 {
 	TileMap *map = new TileMap(levelFile, minCoords, program, scene);
-
 	return map;
 }
 
@@ -121,7 +120,7 @@ void TileMap::prepareArrays(const glm::vec2 &minCoords, ShaderProgram &program)
 
 			if (tile == 96) { //inici de pont
 				vector<Bridge*> newbridge;
-				int delay = 40;
+				int delay = 50;
 				for (int b = 0; b < 8; ++b) {
 					Bridge* br = new Bridge();
 					br->init(program, tile + (b % 2) + 1, tilesheetSize.x, tilesheetSize.y, delay, b, scene);
@@ -130,7 +129,7 @@ void TileMap::prepareArrays(const glm::vec2 &minCoords, ShaderProgram &program)
 					map[j * mapSize.x + i + b] = 94; //just for colisions
 					//map[(j + 1) * mapSize.x + i + b] = 114;
 					newbridge.push_back(br);
-					if (b % 2) delay += 40;
+					if (b % 2) delay += 50;
 				}
 				map[j * mapSize.x + i + 7] = 112;
 				//map[(j + 1) * mapSize.x + i] = 113;
@@ -266,18 +265,26 @@ void TileMap::iniGate(ShaderProgram& shaderProgram, const glm::ivec2& tileMapPos
 void TileMap::renderGate(glm::vec2 posPlayer, float angle) {
 	if (gate == NULL) return;
 	gate->render(posPlayer, angle);
+	for (int i = 0; i < fin_explosions.size(); ++i) fin_explosions[i]->renderExplosion(posPlayer, angle);
 }
 void TileMap::updateGate(int deltaTime) {
 	if (gate == NULL) return;
 	gate->update(deltaTime);
+	for (int i = 0; i < fin_explosions.size(); ++i) fin_explosions[i]->updateExplosion(deltaTime);
 }
-void TileMap::decGate() {
+void TileMap::decGate(ShaderProgram& program, Scene* scene) {
 	--gate_hp; 
 	if (gate_hp == 0) {
 		gate->changeAnimation(1);
 		map[12 * mapSize.x + 212] = 0;
 		map[12 * mapSize.x + 213] = 0;
 
+		for (int i = 0; i < 6; ++i) {
+			Explosion* e = new Explosion();
+			e->init(program, scene);
+			e->setPos(glm::vec2((210+i) * 16, 10.5 * 16));
+			fin_explosions.push_back(e);
+		}
 	}
 }
 bool TileMap::getGatelives() {

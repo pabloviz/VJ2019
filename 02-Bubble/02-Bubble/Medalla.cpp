@@ -1,12 +1,12 @@
 #include "Medalla.h"	
 #include <glm\gtc\matrix_transform.hpp>
 
-void Medalla::iniMedalla(glm::ivec2 offset, ShaderProgram& Sprogram) {
+void Medalla::iniMedalla(glm::ivec2 offset, ShaderProgram& Sprogram, string textu) {
 
 	program = &Sprogram;
 	//position = posTile; //used for transform
 	glm::ivec2 posTile = offset;
-	bool b = tilesheet.loadFromFile("images/medalla.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	bool b = tilesheet.loadFromFile(textu, TEXTURE_PIXEL_FORMAT_RGBA);
 	//bool b = tilesheet.loadFromFile("images/tilesheet.png", TEXTURE_PIXEL_FORMAT_RGBA);
 	tilesheet.setWrapS(GL_CLAMP_TO_EDGE);
 	tilesheet.setWrapT(GL_CLAMP_TO_EDGE);
@@ -49,6 +49,7 @@ void Medalla::iniMedalla(glm::ivec2 offset, ShaderProgram& Sprogram) {
 	texCoordLocation = program->bindVertexAttribute("texCoord", 2, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
 }
+
 void Medalla::setPos(glm::vec2 newpos) {
 	position = newpos;
 }
@@ -60,8 +61,7 @@ void Medalla::render() {
 	glm::mat4 modelview = glm::mat4(1.0f);
 	modelview = glm::translate(modelview, glm::vec3(position.x, position.y, 0.f));
 	program->setUniformMatrix4f("modelview", modelview);
-	
-	//program->setUniform2f("texCoordDispl", texCoordDispl.x, texCoordDispl.y);
+	program->setUniform2f("texCoordDispl", 0.0f, 0.0f);
 	glEnable(GL_TEXTURE_2D);
 	tilesheet.use();
 	glBindVertexArray(vao);

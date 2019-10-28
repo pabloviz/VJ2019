@@ -81,6 +81,12 @@ private:
 	Menu * menu;
 	Controls * controls;
 	Controls * credits;
+	Medalla * camouflage_icon;
+	Medalla * player_speed_icon;
+	Medalla * bullet_speed_icon;
+	bool camouflage_available, player_speed_available, bullet_speed_available;
+
+
 	int maxPowerups;
 };
 

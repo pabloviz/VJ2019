@@ -33,7 +33,17 @@ Sprite::Sprite(const glm::vec2 &quadSize, const glm::vec2 &sizeInSpritesheet, Te
 	shaderProgram = program;
 	currentAnimation = -1;
 	position = glm::vec2(0.f);
+	alfa = 1.0;
 }
+
+void Sprite::changeTexture(string newtext) {
+	texture->loadFromFile(newtext, TEXTURE_PIXEL_FORMAT_RGBA);
+}
+
+void Sprite::changeAlfa(float newalfa) {
+	alfa = newalfa;
+}
+
 
 void Sprite::update(int deltaTime)
 {
@@ -51,6 +61,7 @@ void Sprite::update(int deltaTime)
 
 void Sprite::render(glm::vec2 posPlayer, float angle) 
 {
+	
 	glm::mat4 modelview = glm::mat4(1.0f);
 	
 	modelview = glm::translate(modelview, glm::vec3(posPlayer.x + 48, posPlayer.y + 32, 0.f));
@@ -59,6 +70,7 @@ void Sprite::render(glm::vec2 posPlayer, float angle)
 	modelview = glm::translate(modelview, glm::vec3(position.x, position.y, 0.f));
 	shaderProgram->setUniformMatrix4f("modelview", modelview);
 	shaderProgram->setUniform2f("texCoordDispl", texCoordDispl.x, texCoordDispl.y);
+	shaderProgram->setUniform2f("transp", alfa, alfa);
 	glEnable(GL_TEXTURE_2D);
 	texture->use();
 	glBindVertexArray(vao);

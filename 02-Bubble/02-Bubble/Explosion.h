@@ -16,5 +16,6 @@ private:
 	glm::ivec2 posExplosion;
 	Sprite* sprite;
 	Texture tilesheet;
+	int timer;
 
 };

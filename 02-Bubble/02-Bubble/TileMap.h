@@ -45,7 +45,7 @@ public:
 	void iniGate(ShaderProgram& shaderProgram, const glm::ivec2& tileMapPos);
 	void renderGate(glm::vec2 posPlayer, float angle);
 	void updateGate(int deltaTime);
-	void decGate();
+	void decGate(ShaderProgram& program, Scene* scene);
 	bool getGatelives();
 	
 private:
@@ -66,6 +66,7 @@ private:
 	Sprite *gate;
 	int gate_hp;
 	Scene *scene;
+	vector<Explosion *> fin_explosions;
 
 
 };
