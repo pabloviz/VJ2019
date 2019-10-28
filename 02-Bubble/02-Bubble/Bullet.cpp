@@ -17,9 +17,10 @@ enum BulletAnims
 };
 
 void Bullet::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, float &angle, 
-				  glm::vec2 &posPlayer, bool friendly, Scene *scene)
+				  glm::vec2 &posPlayer, bool friendly, Scene *scene, bool fast)
 {
 	this->friendly = friendly;
+	this->fast = fast;
 	spritesheet.loadFromFile("images/bullet.png", TEXTURE_PIXEL_FORMAT_RGBA);
 	sprite = Sprite::createSprite(glm::ivec2(8, 8), glm::vec2(1, 1), &spritesheet, &shaderProgram, scene);
 	sprite->setNumberAnimations(1);
@@ -38,8 +39,8 @@ void Bullet::update(int deltaTime)
 {
 	sprite->update(deltaTime);
 
-	posBullet.x += HORIZ_VEL * -cos(angle);
-	posBullet.y += VERT_VEL * sin(angle);
+	posBullet.x += (HORIZ_VEL + (HORIZ_VEL * fast)) * -cos(angle);
+	posBullet.y += (VERT_VEL + (VERT_VEL * fast)) * sin(angle);
 	
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posBullet.x), float(tileMapDispl.y + posBullet.y)));
 }

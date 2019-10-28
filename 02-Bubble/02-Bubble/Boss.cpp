@@ -28,7 +28,7 @@ void Boss::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Scen
 	this->ticks = 0;
 	this->deathTicks = 0;
 	this->dying = false;
-	this->life = 50;
+	this->life = 20;
 
 	spritesheet.loadFromFile("images/boss_sprites.png", TEXTURE_PIXEL_FORMAT_RGBA);
 	sprite = Sprite::createSprite(glm::ivec2(128, 128), glm::vec2(TILESHEET_H, TILESHEET_V), &spritesheet, &shaderProgram, scene);
@@ -70,7 +70,7 @@ void Boss::update(int deltaTime)
 	float angle;
 
 	//FIRE BULLETS
-	if (posPlayer.x != -1 && (ticks % 20 == 0) && sprite->animation() == OPEN) { 
+	if (posPlayer.x != -1 && (ticks % 40 == 0) && sprite->animation() == OPEN) { 
 		//player must exist, and enemy fires with an interval between bullets
 		glm::ivec2 posBossAux = posBoss;
 		posBossAux.x += 2 * 16;

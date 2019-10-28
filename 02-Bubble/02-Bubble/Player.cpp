@@ -33,6 +33,9 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Sc
 	this->dying = false;
 	this->invulnerable = true;
 	spread = false;
+	speed = false;
+	fastBullets = false;
+	camouflage = false;
 
 	spritesheet.loadFromFile("images/contraspritesheet.png", TEXTURE_PIXEL_FORMAT_RGBA);
 	sprite = Sprite::createSprite(glm::ivec2(32, 48), glm::vec2(TILESHEET_H, TILESHEET_V), &spritesheet, &shaderProgram, scene);
@@ -137,10 +140,44 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Sc
 
 void Player::update(int deltaTime) //changed
 {
+
+	if (Game::instance().getKey('f')) {
+		maxInvFrames = 999999999;
+		invulnerable = true;
+	}
+
+	if (speed) {
+		speedFrames++;
+		if (speedFrames >= 200) {
+			speedFrames = 0;
+			speed = false;
+		}
+	}
+
+	if (camouflage) {
+		camouflageFrames++;
+		if (camouflageFrames >= 200) {
+			camouflageFrames = 0;
+			camouflage = false;
+		}
+	}
+
+	if (fastBullets) {
+
+		fastBulletsFrames++;
+		if (fastBulletsFrames >= 200) {
+			fastBulletsFrames = 0;
+			fastBullets = false;
+		}
+	}
+
 	sprite->update(deltaTime);
 	if (!invulnerable) inv_frames = 0;
 	else ++inv_frames;
-	if (inv_frames >= 200) invulnerable = false;
+	if (inv_frames >= maxInvFrames) {
+		invulnerable = false;
+		speed = false;
+	}
 
 	air = false;
 	water = false;
@@ -183,7 +220,9 @@ void Player::update(int deltaTime) //changed
 		}
 		else
 		{
-			posPlayer.y = startY - JUMP_HEIGHT * sin(3.14159f * jumpAngle / 180.f);
+			if (!speed) posPlayer.y = startY - JUMP_HEIGHT * sin(3.14159f * jumpAngle / 180.f);
+			else posPlayer.y = startY - 125 * sin(3.14159f * jumpAngle / 180.f);
+
 			if (jumpAngle > 90)
 				bJumping = !map->collisionMoveDown(posPlayer, glm::ivec2(32, 48), &posPlayer.y, false);
 		}
@@ -238,7 +277,10 @@ void Player::update(int deltaTime) //changed
 		glm::vec2 posAux = posPlayer;
 		posAux.y += 32;
 		if (!crouch && !(water && map->collisionMoveLeft(posAux, glm::ivec2(32, 16), false))) {
-			if (posPlayer.x >= 0.5f) posPlayer.x -= 0.75;
+			if (posPlayer.x >= 0.5f) {
+				if (!speed) posPlayer.x -= 0.75;
+				else posPlayer.x -= 1.5;
+			}
 			
 		}
 	}
@@ -263,10 +305,12 @@ void Player::update(int deltaTime) //changed
 		//CHECK COLLISION
 		glm::ivec2 posAux = posPlayer;
 		posAux.y += 32;
-		if (!crouch && !(water && map->collisionMoveRight(posAux, glm::ivec2(32, 16),false))) {
+		if (!crouch && !(water && map->collisionMoveRight(posAux, glm::ivec2(32, 16), false))) {
 			if (!map->collisionMoveRight(posAux, glm::ivec2(32, 16), false))
-				if (!(scene->getLevel() == 3 && posPlayer.x > 12 * 16)) posPlayer.x += 0.75;
-			
+				if (!(scene->getLevel() == 3 && posPlayer.x > 12 * 16)) {
+					if (!speed) posPlayer.x += 0.75;
+					else posPlayer.x += 1.5;
+				}
 		}
 	}
 	else
@@ -468,4 +512,20 @@ bool Player::getCrouch() {
 
 bool Player::getWater() {
 	return water;
+}
+
+void Player::setSpeed(bool speed) {
+	this->speed = speed;
+}
+
+void Player::setCamouflage(bool camouflage) {
+	this->camouflage = camouflage;
+}
+
+void Player::setFastBullets(bool fastBullets) {
+	this->fastBullets = fastBullets;
+}
+
+bool Player::getFastBullets() {
+	return this->fastBullets;
 }

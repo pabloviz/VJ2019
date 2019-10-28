@@ -11,6 +11,9 @@
 #define INIT_PLAYER_X_TILES 4 //4 
 #define INIT_PLAYER_Y_TILES 2
 
+#define INIT_PLAYER_TV_X_TILES 5 //4 
+#define INIT_PLAYER_TV_Y_TILES 4
+
 #define INIT_BOSS_X_TILES 6 //4 
 #define INIT_BOSS_Y_TILES 0
 
@@ -76,12 +79,13 @@ void Scene::init(int level) //changed
 	win = false;
 	angle = 0;
 	engine = irrklang::createIrrKlangDevice();
+	maxPowerups = 0;
 
 	if (TV) {
 		map = TileMap::createTileMap("levels/level02.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram, this);
 		obj = new ObjectMap("levels/obj02.txt"); //TODO: change
 		maxEnemies = obj->getSize();
-		engine->play2D("sound/level2.mp3");
+		engine->play2D("sound/level2.mp3", true);
 	}
 	else {
 		if (level == 0) {
@@ -94,15 +98,16 @@ void Scene::init(int level) //changed
 			map->iniGate(texProgram, glm::ivec2(211 * 16, 10 * 16));
 			obj = new ObjectMap("levels/obj01.txt");
 			maxEnemies = obj->getSize();
-			engine->play2D("sound/level1.mp3");
+			engine->play2D("sound/level1.mp3", true);
+			maxPowerups = 4;
 		}
 		else if (level== 3){
 			map = TileMap::createTileMap("levels/level03.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram, this);
 			map->iniWater(texProgram, glm::ivec2(SCREEN_X, SCREEN_Y));
 			map->iniGate(texProgram, glm::ivec2(211 * 16, 10 * 16));
 			obj = new ObjectMap("levels/obj03.txt");
-			maxEnemies = obj->getSize();
-			engine->play2D("sound/level3.mp3");
+			maxEnemies = 3;
+			engine->play2D("sound/level3.mp3", true);
 			boss = new Boss();
 			boss->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
 			boss->setPosition(glm::vec2(INIT_BOSS_X_TILES * map->getTileSize(), INIT_BOSS_Y_TILES * map->getTileSize()));
@@ -136,7 +141,7 @@ void Scene::init(int level) //changed
 		else {
 			playertv = new PlayerTV();
 			playertv->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this, -(3.14f / 2.f));
-			playertv->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
+			playertv->setPosition(glm::vec2(INIT_PLAYER_TV_X_TILES * map->getTileSize(), INIT_PLAYER_TV_Y_TILES * map->getTileSize()));
 			playertv->setTileMap(map);
 			playertv->setLives(PLAYER_LIVES);
 		}
@@ -147,10 +152,14 @@ void Scene::init(int level) //changed
 	//boss->setPosition(glm::vec2(20 * map->getTileSize(), 2 * map->getTileSize()));
 	//boss->setTileMap(map);
 	if (level == 1 || level == 2 || level == 3) {
-		powerup = new Powerup();
-		powerup->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this);
-		powerup->setPosition(glm::vec2(15 * map->getTileSize(), 10 * map->getTileSize()));
-		powerup->setTileMap(map);
+		if (level == 1) {
+			for (int i = 0; i < maxPowerups; ++i) {
+				powerups.push_back(new Powerup());
+				powerups[i]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this, i);
+				powerups[i]->setPosition(glm::vec2((15 + 5*i) * map->getTileSize(), 10 * map->getTileSize()));
+				powerups[i]->setTileMap(map);
+			}
+		}
 		for (int i = 0; i < PLAYER_LIVES; ++i) {
 			Medalla * medalla = new Medalla();
 			medalla->iniMedalla(glm::ivec2(1 + 16 * i, 4), texProgram);
@@ -228,7 +237,9 @@ void Scene::update(int deltaTime)
 			posPlayer = playertv->getPosPlayer();
 			playertv->update(deltaTime);
 		}
-		if (powerup != NULL) powerup->update(deltaTime);
+		for (int i = 0; i < maxPowerups; ++i) {
+			if (powerups[i] != NULL) powerups[i]->update(deltaTime);
+		}
 		if (boss != NULL) boss->update(deltaTime);
 
 		if (ticks % 2 == 0)
@@ -254,7 +265,7 @@ void Scene::update(int deltaTime)
 		}
 		bool enemiesRemain = false;
 		for (int i = 0; i < maxEnemies; ++i) {
-			if (spawnedEnemies[i] == false) {
+			if (spawnedEnemies[i] == false && currentlevel != 3) {
 				glm::vec2 posEnemy = obj->getEnemyPos(i);
 				posEnemy.x *= TILE_SIZE;
 				posEnemy.y *= TILE_SIZE;
@@ -271,6 +282,10 @@ void Scene::update(int deltaTime)
 			if (!spawnedEnemies[i] || enemies[i] != NULL) {
 				enemiesRemain = true;
 			}
+		}
+		if (currentlevel == 3 && boss == NULL) {
+			win = true;
+			++currentlevel;
 		}
 		if (!win && !enemiesRemain && TV) win = true; // level 2 win condition, if everyone is dead
 		checkEnemyCollisions();
@@ -323,7 +338,8 @@ void Scene::render()
 		for (int i = 0; i < MAX_BULLETS; ++i) {
 			if (bullets[i] != NULL) bullets[i]->render(posPlayer, angle);
 		}
-		if (powerup != NULL) powerup->render(posPlayer, angle);
+		for (int i = 0; i < maxPowerups; ++i)
+			if (powerups[i] != NULL) powerups[i]->render(posPlayer, angle);
 		int lives;
 		if (TV && playertv != NULL) lives = playertv->getLives();
 		else if (!TV && player != NULL) lives = player->getLives();
@@ -375,6 +391,7 @@ void Scene::checkEnemyCollisions() {
 				for (int j = 0; j < maxEnemies; ++j) {
 					if (enemies[j] != NULL && !enemies[j]->getDying()) {
 						enemyPos = enemies[j]->getEnemyPos();
+						enemyPos.y += 16;
 						hit = collides(bulletPos, BULLET_WIDTH, BULLET_HEIGHT,
 							enemyPos, ENEMY_WIDTH, ENEMY_HEIGHT);
 						if (hit) {
@@ -390,7 +407,7 @@ void Scene::checkEnemyCollisions() {
 					glm::ivec2 bossPos = boss->getBossPos();
 					//adjusting the hitbox
 					bossPos.x += 16;
-					bossPos.y += 32;
+					bossPos.y += 64;
 					hit = collides(bulletPos, BULLET_WIDTH, BULLET_HEIGHT,
 						bossPos, BOSS_WIDTH, BOSS_HEIGHT);
 					if (hit) {
@@ -457,14 +474,26 @@ void Scene::checkPlayerCollisions() {
 		}
 	}
 
-	if (powerup != NULL) {
-		glm::ivec2 powerupPos = powerup->getPowerupPos();
-		hit = collides(powerupPos, POWERUP_WIDTH, POWERUP_HEIGHT,
-			  posPlayer, PLAYER_WIDTH, PLAYER_HEIGHT);
-		if (hit) {
-			despawnPowerup();
-			if (!TV)player->setSpread(true);
-			else playertv->setSpread(true);
+	for (int i = 0; i < maxPowerups; ++i) {
+		if (powerups[i] != NULL) {
+			glm::ivec2 powerupPos = powerups[i]->getPowerupPos();
+			hit = collides(powerupPos, POWERUP_WIDTH, POWERUP_HEIGHT,
+				posPlayer, PLAYER_WIDTH, PLAYER_HEIGHT);
+			if (hit) {
+				if (powerups[i]->getType() == 0) {
+					if (!TV)player->setSpread(true);
+				}
+				if (powerups[i]->getType() == 1) {
+					if (!TV)player->setFastBullets(true);
+				}
+				if (powerups[i]->getType() == 2) {
+					if (!TV)player->setCamouflage(true);
+				}
+				if (powerups[i]->getType() == 3) {
+					if (!TV)player->setSpeed(true);
+				}
+				despawnPowerup(i);
+			}
 		}
 	}
 }
@@ -484,8 +513,11 @@ bool Scene::collides(glm::ivec2 pos1, int width1, int height1, glm::ivec2 pos2, 
 
 void Scene::addBullet (float angle, glm::vec2 posBullet, bool friendly) {
 	int stop = 1;
-	bool spread = false, cond = false;
-	if (friendly && !TV) spread = player->getSpread();
+	bool spread = false, cond = false, fast = false;
+	if (friendly && !TV) {
+		spread = player->getSpread();
+		fast = player->getFastBullets();
+	}
 	else if (friendly) spread = playertv->getSpread();
 	if (spread) {
 		stop = 5;
@@ -495,7 +527,7 @@ void Scene::addBullet (float angle, glm::vec2 posBullet, bool friendly) {
 	for (int i = 0; i < MAX_BULLETS && stop != 0; ++i) {
 		if (bullets[i] == NULL) {
 			bullets[i] = new Bullet();
-			bullets[i]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, angle, posBullet, friendly, this);
+			bullets[i]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, angle, posBullet, friendly, this, fast);
 			angle += 0.436;
 			--stop;
 			if (stop == 0) engine->play2D("sound/fire.wav");
@@ -518,9 +550,10 @@ void Scene::despawnBullet(int i) {
 	bullets[i] = NULL;
 }
 
-void Scene::despawnPowerup() {
-	delete powerup;
-	powerup = NULL;
+void Scene::despawnPowerup(int i) {
+
+	delete powerups[i];
+	powerups[i] = NULL;
 	engine->play2D("sound/powerup.wav");
 }
 
@@ -611,14 +644,17 @@ void Scene::deleteEntities() {
 		bullets[i] = NULL;
 		bullets.pop_back();
 	}
-	if (powerup != NULL) delete powerup;
+	for (int i = maxPowerups - 1; i >= 0; --i) {
+		if (powerups[i] != NULL) delete powerups[i];
+		powerups[i] = NULL;
+		powerups.pop_back();
+	}
 	map = NULL;
 	player = NULL;
 	playertv = NULL;
 	boss = NULL;
 	delete engine;
 	engine = NULL;
-	powerup = NULL;
 	delete camera;
 	camera = NULL;
 }

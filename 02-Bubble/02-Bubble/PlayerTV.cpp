@@ -57,10 +57,14 @@ void PlayerTV::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, 
 
 void PlayerTV::update(int deltaTime)
 {
+	if (Game::instance().getKey('f')) {
+		maxInvFrames = 99999999;
+		invulnerable = true;
+	}
 	sprite->update(deltaTime);
 	if (!invulnerable) inv_frames = 0;
 	else ++inv_frames;
-	if (inv_frames >= 200) invulnerable = false;
+	if (inv_frames >= maxInvFrames) invulnerable = false;
 
 	air = false;
 	water = false;

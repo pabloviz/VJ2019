@@ -49,7 +49,7 @@ private:
 	void initShaders();
 	void checkEnemyCollisions();
 	void despawnBullet(int i);
-	void despawnPowerup();
+	void despawnPowerup(int i);
 	void checkPlayerCollisions();
 
 	glm::ivec2 getBulletPos(int i, bool &exists);
@@ -64,7 +64,7 @@ private:
 	vector<Enemy*> enemies;
 	vector<bool> spawnedEnemies;
 	vector<Bullet*> bullets;
-	Powerup *powerup;
+	vector<Powerup*> powerups;
 	ShaderProgram texProgram;
 	float currentTime;
 	glm::mat4 projection;
@@ -81,6 +81,7 @@ private:
 	Menu * menu;
 	Controls * controls;
 	Controls * credits;
+	int maxPowerups;
 };
 
 

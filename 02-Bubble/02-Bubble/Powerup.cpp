@@ -10,15 +10,37 @@
 #define JUMP_HEIGHT 96
 #define FALL_STEP 4
 
-void Powerup::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Scene *scene)
-{
-	spritesheet.loadFromFile("images/powerup.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	sprite = Sprite::createSprite(glm::ivec2(32, 16), glm::vec2(1, 0.5f), &spritesheet, &shaderProgram, scene);
-	sprite->setNumberAnimations(1);
+#define TILESHEET_H 0.5f
+#define TILESHEET_V 0.25f
 
-	sprite->setAnimationSpeed(0, 8);
-	sprite->addKeyframe(0, glm::vec2(0.f, 0.f));
-	sprite->changeAnimation(0);
+enum PowerupAnims
+{
+	SPREAD, BULLETS, FAST, CAMOUFLAGE
+};
+
+void Powerup::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram, Scene *scene, int type)
+{
+
+	this->type = type;
+
+	spritesheet.loadFromFile("images/powerup.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	sprite = Sprite::createSprite(glm::ivec2(32, 16), glm::vec2(TILESHEET_H, TILESHEET_V), &spritesheet, &shaderProgram, scene);
+	sprite->setNumberAnimations(4);
+
+	sprite->setAnimationSpeed(SPREAD, 8);
+	sprite->addKeyframe(SPREAD, glm::vec2(0.f, 0.f));
+
+	sprite->setAnimationSpeed(BULLETS, 8);
+	sprite->addKeyframe(BULLETS, glm::vec2(TILESHEET_H, 0.f));
+
+	sprite->setAnimationSpeed(FAST, 8);
+	sprite->addKeyframe(FAST, glm::vec2(0.f, TILESHEET_V));
+
+	sprite->setAnimationSpeed(CAMOUFLAGE, 8);
+	sprite->addKeyframe(CAMOUFLAGE, glm::vec2(TILESHEET_H, TILESHEET_V));
+
+
+	sprite->changeAnimation(type);
 	tileMapDispl = tileMapPos;
 
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPowerup.x), float(tileMapDispl.y + posPowerup.y)));
@@ -62,4 +84,8 @@ bool Powerup::farFromPlayer(const glm::vec2 &posPlayer) {
 
 glm::ivec2 Powerup::getPowerupPos() {
 	return posPowerup;
+}
+
+int Powerup::getType() {
+	return type;
 }

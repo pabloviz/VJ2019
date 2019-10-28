@@ -37,6 +37,12 @@ public:
 	void setLives(int lives);
 	int getLives();
 
+	void setSpeed(bool speed);
+	void setCamouflage(bool camouflage);
+	void setFastBullets(bool fastBullets);
+
+	bool getFastBullets();
+
 	glm::vec2 getPosPlayer();
 
 private:
@@ -52,12 +58,19 @@ private:
 	int inv_frames;
 	float startY;
 
+	int maxInvFrames = 200;
+	int speedFrames = 0;
+	int camouflageFrames = 0;
+	int fastBulletsFrames = 0;
 	int lives;
 	int deathTicks;
 	Texture spritesheet;
 	Sprite *sprite;
 	TileMap *map;
 	Scene *scene;
+	bool speed;
+	bool fastBullets;
+	bool camouflage;
 };
 
 

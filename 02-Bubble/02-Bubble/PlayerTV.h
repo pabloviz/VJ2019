@@ -52,6 +52,7 @@ private:
 	int jumpAngle;
 	float startY, angle;
 	int inv_frames;
+	int maxInvFrames = 200;
 	int lives;
 	int death_ticks;
 	Texture spritesheet;
