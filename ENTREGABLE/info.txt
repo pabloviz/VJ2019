@@ -1,0 +1,35 @@
+Projecte Videojocs FIB 2019/2020
+---------------------------------
+Integrants:
+Gerard Candón
+Pablo Vizcaino
+---------------------------------
+Instruccions:
+
+ARROW KEYS: moviment
+z: salt
+x: fire
+[c,v,b]: utilitzar els powerups
+a: rotar càmera horari
+s: rotar càmera antihorari
+[1,2,3]: level select
+f: god mode (invulnerable)
+---------------------------------
+
+En aquest projecte hem implementat un homenatge al primer nivell del Contra (NES), un nivell top-view
+del Contra III (SNES) i una fase de boss agafat del Contra (NES). Al primer nivell, l'objectiu és arribar
+al final, disparant als enemics i saltant els obstacles que siguin necessaris fins a arribar a la porta 
+que s'ha de derribar. Al segon nivell, l'objectiu és trobar i acabar amb tots els enemics que hi ha al nivell,
+i al tercer nivell l'objectiu és acabar amb el boss.
+
+Ens hem pres la llibertat d'implementar tres powerups nous que el jugador pot utilitzar quan vulgui amb les tecles
+c, v i b. Aquests duren uns quants segons, i es poden utilitzar per a sobreviure situacions complicades.
+Els powerups en qüestió són:
+(c)Camouflage: El player es torna invulnerable.
+(v)Fast player: El player pot córrer més lluny i saltar més alt.
+(b)Fast bullets: El player pot disparar bales més ràpides.
+
+El player també pot trobar la clàssica Spread Gun que permet disparar diferents projectils alhora.
+
+Per a motius de testing, el player pot prémer la f per a tornar-se invulnerable durant la resta del nivell, així com
+l'ús d'un selector de nivells utilitzant les tecles 1, 2 i 3.
