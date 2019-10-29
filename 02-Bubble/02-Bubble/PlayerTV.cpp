@@ -254,3 +254,7 @@ bool PlayerTV::getWater() {
 float PlayerTV::getAngle() {
 	return angle;
 }
+
+bool PlayerTV::getDying() {
+	return this->dying;
+}

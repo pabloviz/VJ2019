@@ -26,7 +26,7 @@
 #define ENEMY_HEIGHT 32
 #define ENEMY_WIDTH 32
 
-#define PLAYER_HEIGHT 48
+#define PLAYER_HEIGHT 32
 #define PLAYER_WIDTH 32
 
 #define POWERUP_HEIGHT 16
@@ -156,7 +156,7 @@ void Scene::init(int level) //changed
 			for (int i = 0; i < maxPowerups; ++i) {
 				powerups.push_back(new Powerup());
 				powerups[i]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, this, i);
-				powerups[i]->setPosition(glm::vec2((15 + 5*i) * map->getTileSize(), 10 * map->getTileSize()));
+				powerups[i]->setPosition(glm::vec2((15 + 15*i) * map->getTileSize(), 10 * map->getTileSize()));
 				powerups[i]->setTileMap(map);
 			}
 			camouflage_icon = new Medalla(); camouflage_icon->iniMedalla(glm::ivec2(1 + 16*0, 20), texProgram, "images/camouflage.png");
@@ -192,6 +192,27 @@ void Scene::update(int deltaTime)
 	++ticks;
 	currentTime += deltaTime;
 	
+	if (Game::instance().getKey('c')) {
+		if (camouflage_available) {
+			player->setCamouflage(true);
+			camouflage_available = false;
+		}
+	}
+
+	if (Game::instance().getKey('v')) {
+		if (player_speed_available) {
+			player->setSpeed(true);
+			player_speed_available = false;
+		}
+	}
+
+	if (Game::instance().getKey('b')) {
+		if (bullet_speed_available) {
+			player->setFastBullets(true);
+			bullet_speed_available = false;
+		}
+	}
+
 	if (currentlevel == 0) {
 		if (Game::instance().getSpecialKey(101)) menu->changeselected(1);
 		if (Game::instance().getSpecialKey(103)) menu->changeselected(2);
@@ -211,6 +232,7 @@ void Scene::update(int deltaTime)
 		}
 		menu->update(deltaTime);
 	}
+
 	else if (currentlevel == 4) {
 
 		if (Game::instance().getKey('b')) {
@@ -222,7 +244,15 @@ void Scene::update(int deltaTime)
 	}else if (currentlevel == 5) {
 		credits->update(deltaTime);
 	}
-	else {
+	else{
+
+		int lives = 0;
+		if (player != NULL) lives = player->getLives();
+		else if (playertv != NULL) lives = playertv->getLives();
+		if (lives == 0) {
+			deleteEntities();
+			init(0);
+		}
 
 		if (TV) {
 			if (Game::instance().getKey('a')) {
@@ -273,7 +303,7 @@ void Scene::update(int deltaTime)
 		}
 		bool enemiesRemain = false;
 		for (int i = 0; i < maxEnemies; ++i) {
-			if (spawnedEnemies[i] == false && currentlevel != 3) {
+			if (spawnedEnemies[i] == false && currentlevel != 3 && currentlevel != 0 && currentlevel != 4 && currentlevel != 5) {
 				glm::vec2 posEnemy = obj->getEnemyPos(i);
 				posEnemy.x *= TILE_SIZE;
 				posEnemy.y *= TILE_SIZE;
@@ -359,7 +389,6 @@ void Scene::render()
 		if (bullet_speed_icon != NULL && bullet_speed_available) bullet_speed_icon->render();
 	}
 }
-
 void Scene::initShaders()
 {
 	Shader vShader, fShader;
@@ -424,6 +453,7 @@ void Scene::checkEnemyCollisions() {
 					if (hit) {
 						despawnBullet(i);
 						boss->decrementLife();
+						engine->play2D("sound/explode.wav");
 					}
 				}
 
@@ -465,8 +495,17 @@ void Scene::checkPlayerCollisions() {
 				posPlayer, PLAYER_WIDTH, height) && !bullets[i]->getFriendly();
 			if (hit) {
 				despawnBullet(i);
-				if (!TV)player->die();
-				else playertv->die();
+
+				if (!TV && !player->getDying()) {
+					engine->play2D("sound/explode.wav");
+					player->die();
+				}
+				else if (TV) {
+					if (!playertv->getDying())
+						engine->play2D("sound/explode.wav");
+					playertv->die();
+				}
+
 			}
 			else if (bullets[i]->farFromPlayer(posPlayer)) despawnBullet(i);
 
@@ -479,8 +518,15 @@ void Scene::checkPlayerCollisions() {
 			hit = collides(enemyPos, ENEMY_WIDTH, ENEMY_HEIGHT,
 				posPlayer, PLAYER_WIDTH, PLAYER_HEIGHT);
 			if (hit && !enemies[i]->getDying()) {
-				if(!TV) player->die();
-				else playertv->die();
+				if (!TV && !player->getDying()) {
+					engine->play2D("sound/explode.wav");
+					player->die();
+				}
+				else if (TV) {
+					if (!playertv->getDying())
+						engine->play2D("sound/explode.wav");
+					playertv->die();
+				}
 			}
 		}
 	}
@@ -547,7 +593,7 @@ void Scene::addBullet (float angle, glm::vec2 posBullet, bool friendly) {
 			bullets[i]->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram, angle, posBullet, friendly, this, fast);
 			angle += 0.436;
 			--stop;
-			if (stop == 0) engine->play2D("sound/fire.wav");
+			if (friendly && stop == 0) engine->play2D("sound/fire.wav");
 		}
 	}
 }

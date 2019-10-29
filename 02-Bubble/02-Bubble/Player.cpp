@@ -156,7 +156,9 @@ void Player::update(int deltaTime) //changed
 
 	if (camouflage) {
 		camouflageFrames++;
+		invulnerable = true;
 		if (camouflageFrames >= 200) {
+			invulnerable = false;
 			camouflageFrames = 0;
 			camouflage = false;
 			sprite->changeTexture("images/contraspritesheet.png");
@@ -532,4 +534,8 @@ void Player::setFastBullets(bool fastBullets) {
 
 bool Player::getFastBullets() {
 	return this->fastBullets;
+}
+
+bool Player::getDying() {
+	return this->dying;
 }

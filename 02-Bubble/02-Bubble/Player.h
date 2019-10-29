@@ -42,6 +42,7 @@ public:
 	void setFastBullets(bool fastBullets);
 
 	bool getFastBullets();
+	bool getDying();
 
 	glm::vec2 getPosPlayer();
 
